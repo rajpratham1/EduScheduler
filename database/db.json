@@ -1,0 +1,54 @@
+{
+    "users": [
+        { "id": 1, "name": "Admin", "email": "admin@test.com", "role": "admin" },
+        { "id": 2, "name": "Mr. Smith", "email": "smith@test.com", "role": "faculty", "department_id": 1 },
+        { "id": 3, "name": "Ms. Jones", "email": "jones@test.com", "role": "faculty", "department_id": 1 },
+        { "id": 4, "name": "Alice Johnson", "email": "alice@test.com", "role": "student", "department_id": 1 },
+        { "id": 5, "name": "Bob Williams", "email": "bob@test.com", "role": "student", "department_id": 2 }
+    ],
+    "departments": [
+        { "id": 1, "name": "Science & Math" },
+        { "id": 2, "name": "Humanities" },
+        { "id": 3, "name": "Arts" },
+        { "id": 4, "name": "Physical Education" }
+    ],
+    "subjects": [
+        { "id": 1, "name": "Calculus I", "weekly_hours": 4, "department_id": 1 },
+        { "id": 2, "name": "Physics I", "weekly_hours": 4, "department_id": 1 },
+        { "id": 3, "name": "World History", "weekly_hours": 3, "department_id": 2 },
+        { "id": 4, "name": "English Literature", "weekly_hours": 4, "department_id": 2 },
+        { "id": 5, "name": "Team Sports", "weekly_hours": 2, "department_id": 4 },
+        { "id": 6, "name": "Studio Art", "weekly_hours": 2, "department_id": 3 },
+        { "id": 7, "name": "Intro to Python", "weekly_hours": 3, "department_id": 1 }
+    ],
+    "faculty": [
+        { "id": 2, "name": "Mr. Smith", "email": "smith@test.com", "department_id": 1 },
+        { "id": 3, "name": "Ms. Jones", "email": "jones@test.com", "department_id": 1 },
+        { "id": 8, "name": "Mrs. Davis", "email": "davis@test.com", "department_id": 2 },
+        { "id": 9, "name": "Mr. Brown", "email": "brown@test.com", "department_id": 2 },
+        { "id": 10, "name": "Coach Miller", "email": "miller@test.com", "department_id": 4 },
+        { "id": 11, "name": "Ms. Wilson", "email": "wilson@test.com", "department_id": 3 },
+        { "id": 12, "name": "Mr. Garcia", "email": "garcia@test.com", "department_id": 1 }
+    ],
+    "classrooms": [
+        { "id": 1, "name": "Room 101", "type": "Standard", "capacity": 30 },
+        { "id": 2, "name": "Room 102", "type": "Standard", "capacity": 30 },
+        { "id": 3, "name": "Science Lab", "type": "Lab", "capacity": 25 },
+        { "id": 4, "name": "Gymnasium", "type": "Special", "capacity": 50 },
+        { "id": 5, "name": "Art Studio", "type": "Special", "capacity": 20 },
+        { "id": 6, "name": "Computer Lab", "type": "Lab", "capacity": 25 }
+    ],
+    "students": [
+        { "id": 4, "name": "Alice Johnson", "email": "alice@test.com", "department_id": 1 },
+        { "id": 5, "name": "Bob Williams", "email": "bob@test.com", "department_id": 2 }
+    ],
+    "course_enrollments": [
+        { "id": 1, "student_id": 4, "subject_id": 1 },
+        { "id": 2, "student_id": 4, "subject_id": 2 },
+        { "id": 3, "student_id": 4, "subject_id": 7 },
+        { "id": 4, "student_id": 5, "subject_id": 3 },
+        { "id": 5, "student_id": 5, "subject_id": 4 }
+    ],
+    "draft_class_schedule": [],
+    "published_class_schedule": []
+}
