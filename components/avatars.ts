@@ -34,7 +34,7 @@ const Avatar2: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 const Avatar3: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-     <svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="128" height="128" {...props}>
+    <svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="128" height="128" {...props}>
         <mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><rect width="36" height="36" rx="72" fill="#FFFFFF"></rect></mask>
         <g mask="url(#mask__beam)">
             <rect width="36" height="36" fill="#9565f5"></rect>
