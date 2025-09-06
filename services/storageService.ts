@@ -1,9 +1,11 @@
 // services/storageService.ts
+// FIX: Add file extension to import
 import { MOCK_DB } from '../backend/mockDb.ts';
+import type { MockDb } from '../types.ts';
 
 const DB_KEY = 'eduSchedulerDb';
 
-const getDb = () => {
+const getDb = (): MockDb => {
     try {
         const dbString = localStorage.getItem(DB_KEY);
         if (dbString) {
@@ -26,19 +28,21 @@ const saveDb = (db: any) => {
     }
 };
 
+type TableName = keyof MockDb;
+
 export const storageService = {
-    get: (table: string) => {
+    get: (table: TableName) => {
         const db = getDb();
         return db[table] || [];
     },
-    set: (table: string, data: any) => {
+    set: (table: TableName, data: any) => {
         const db = getDb();
         db[table] = data;
         saveDb(db);
     },
     // Simple auto-incrementing ID for new items
-    getNextId: (table: string) => {
-        const items = storageService.get(table);
+    getNextId: (table: Extract<TableName, 'users' | 'departments' | 'subjects' | 'faculty' | 'students' | 'classrooms' | 'enrollments'>) => {
+        const items = storageService.get(table) as { id: number }[];
         if (items.length === 0) return 1;
         return Math.max(...items.map((item: any) => item.id)) + 1;
     }

@@ -1,10 +1,10 @@
 // components/ScheduleSettingsManager.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import * as api from '../services/api';
-import { CalendarDaysIcon, TrashIcon } from './icons';
-import { SkeletonLoader } from './SkeletonLoader';
-import ConfirmationModal from './ConfirmationModal';
-import { useToast } from '../contexts/ToastContext';
+import * as api from '../services/api.ts';
+import { CalendarDaysIcon, TrashIcon } from './icons.tsx';
+import { SkeletonLoader } from './SkeletonLoader.tsx';
+import ConfirmationModal from './ConfirmationModal.tsx';
+import { useToast } from '../contexts/ToastContext.tsx';
 
 const ScheduleSettingsManager: React.FC = () => {
     const [days, setDays] = useState<string[]>([]);

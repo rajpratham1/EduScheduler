@@ -1,7 +1,7 @@
 // components/ChangePasswordModal.tsx
 import React, { useState } from 'react';
-import * as api from '../services/api';
-import type { User } from '../types';
+import * as api from '../services/api.ts';
+import type { User } from '../types.ts';
 
 interface ChangePasswordModalProps {
     user: User;

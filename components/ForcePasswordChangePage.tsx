@@ -1,10 +1,10 @@
 // components/ForcePasswordChangePage.tsx
 import React, { useState } from 'react';
-import * as api from '../services/api';
-import type { User } from '../types';
-import AuthLayout from './auth/AuthLayout';
-import AuthInput from './auth/AuthInput';
-import { useToast } from '../contexts/ToastContext';
+import * as api from '../services/api.ts';
+import type { User } from '../types.ts';
+import AuthLayout from './auth/AuthLayout.tsx';
+import AuthInput from './auth/AuthInput.tsx';
+import { useToast } from '../contexts/ToastContext.tsx';
 
 interface ForcePasswordChangePageProps {
     user: User;

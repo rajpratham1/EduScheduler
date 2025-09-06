@@ -13,7 +13,7 @@ const ClassroomManager: React.FC = () => {
     const [classroomList, setClassroomList] = useState<Classroom[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [newClassroomName, setNewClassroomName] = useState('');
-    const [newClassroomType, setNewClassroomType] = useState('Lecture');
+    const [newClassroomType, setNewClassroomType] = useState<'Lecture' | 'Lab' | 'Seminar'>('Lecture');
     const [newClassroomCapacity, setNewClassroomCapacity] = useState<number | string>(30);
     const [searchTerm, setSearchTerm] = useState('');
     const [classroomToDelete, setClassroomToDelete] = useState<Classroom | null>(null);
@@ -60,7 +60,7 @@ const ClassroomManager: React.FC = () => {
 
         try {
             const { id, ...newClassroomData } = optimisticClassroom;
-            const addedClassroom = await classroomApi.add(newClassroomData);
+            const addedClassroom = await classroomApi.add(newClassroomData as Omit<Classroom, 'id'>);
             addToast("Classroom added!", "success");
             setClassroomList(prev => prev.map(c => c.id === tempId ? addedClassroom : c));
         } catch(err: any) {
@@ -104,7 +104,7 @@ const ClassroomManager: React.FC = () => {
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Type</label>
-                    <select value={newClassroomType} onChange={e => setNewClassroomType(e.target.value)} className="mt-1 block w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md shadow-sm text-sm dark:text-slate-200" required>
+                    <select value={newClassroomType} onChange={e => setNewClassroomType(e.target.value as 'Lecture' | 'Lab' | 'Seminar')} className="mt-1 block w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md shadow-sm text-sm dark:text-slate-200" required>
                         <option>Lecture</option>
                         <option>Lab</option>
                         <option>Seminar</option>

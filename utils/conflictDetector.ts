@@ -88,14 +88,14 @@ export const detectConflicts = (
         }
         // Check for room preference
         if (line.includes('must be in')) {
-            const roomMatch = /(.+?)\s+must\s+be\s+in\s+(the\s*)?(.+)/.exec(line);
+            const roomMatch = /(.+?)\s+must\s+be\s+in\s+(a\s*)?(.+)/.exec(line);
             if (roomMatch) {
                 const [, subject, , room] = roomMatch;
                 schedule.forEach(entry => {
                     if (entry.subject.toLowerCase().includes(subject.trim()) && !entry.classroom.toLowerCase().includes(room.trim().replace('.', ''))) {
                          conflicts.push({
                             type: 'Soft',
-                            message: `Constraint Violation: ${subject} is scheduled in ${entry.classroom} but should be in ${room}.`,
+                            message: `Constraint Violation: ${subject} is scheduled in ${entry.classroom} but should be in a ${room}.`,
                             severity: 'warning'
                         });
                     }

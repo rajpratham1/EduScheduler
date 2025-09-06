@@ -1,7 +1,8 @@
 
 
+
+
 import React, { useState, useEffect } from 'react';
-// FIX: Correct import for icons
 // FIX: Add file extension to import
 import { MagicWandIcon } from './icons.tsx';
 

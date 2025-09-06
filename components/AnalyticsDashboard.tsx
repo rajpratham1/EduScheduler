@@ -1,7 +1,8 @@
 // components/AnalyticsDashboard.tsx
 import React, { useState, useEffect } from 'react';
-// FIX: Add file extensions to imports
+// FIX: Add file extension to import
 import * as api from '../services/api.ts';
+// FIX: Add file extension to import
 import { UserGroupIcon, BookOpenIcon, BuildingOfficeIcon, ChartPieIcon } from './icons.tsx';
 
 interface MetricCardProps {

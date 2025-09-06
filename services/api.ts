@@ -1,194 +1,226 @@
 // services/api.ts
 import { storageService } from './storageService.ts';
-import type { User, Subject, Faculty, Classroom, Department, ClassSchedule, Enrollment } from '../types.ts';
+import type { User, Subject, Faculty, Student, Classroom, ClassSchedule, Department, Enrollment } from '../types.ts';
 
-// --- Auth ---
-export const checkSession = async (): Promise<User | null> => {
-    const session = sessionStorage.getItem('session');
-    if (session) {
-        const { userId } = JSON.parse(session);
-        const users = storageService.get('users');
-        return users.find((u: User) => u.id === userId) || null;
-    }
-    return null;
-};
+// --- Utils ---
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// --- Auth API ---
 
 export const login = async (email: string, password: string): Promise<User | null> => {
-    const users = storageService.get('users');
-    const user = users.find((u: User) => u.email.toLowerCase() === email.toLowerCase());
+    await delay(500);
+    const users = storageService.get('users') as User[];
+    const user = users.find(u => u.email === email);
+    // Mock password check. In a real app, this is insecure.
     if (user) {
-        // Mock password check - in real app, this would be a hash comparison
-        // For newly created users, a special temp password is used.
+         // Special case for newly created users by admin
         const tempPassword = user.name.toLowerCase().replace(/\s/g, '') + '123';
-        if (password === 'password123' || (user.forcePasswordChange && password === tempPassword)) {
-            sessionStorage.setItem('session', JSON.stringify({ userId: user.id }));
+        if (user.force_password_change && password === tempPassword) {
+            return user;
+        }
+        // For regular users, mock password is 'password'
+        if (!user.force_password_change && password === 'password') {
             return user;
         }
     }
     return null;
 };
 
-export const logout = () => {
-    sessionStorage.removeItem('session');
-};
-
-export const signUp = async (userData: Omit<User, 'id' | 'avatar' | 'forcePasswordChange'> & { password?: string }) => {
-    const users: User[] = storageService.get('users');
-    if (users.some(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
+export const signUp = async (userData: Omit<User, 'id' | 'avatar'>): Promise<User> => {
+    await delay(500);
+    const users = storageService.get('users') as User[];
+    if (users.some(u => u.email === userData.email)) {
         throw new Error("An account with this email already exists.");
     }
-    const newUser: User = {
-        ...userData,
-        id: storageService.getNextId('users'),
-        avatar: 'avatar1',
-        forcePasswordChange: false,
-    };
+    const newId = storageService.getNextId('users');
+    const newUser: User = { ...userData, id: newId, avatar: `avatar${(newId % 6) + 1}` };
     storageService.set('users', [...users, newUser]);
     return newUser;
 };
 
-export const sendOtp = async (mobile: string) => {
-    // Mock OTP service
-    console.log(`Sending OTP to ${mobile}. Mock OTP is 123456`);
+export const sendOtp = async (mobile: string): Promise<{ success: true }> => {
+    await delay(500);
+    console.log(`Sending mock OTP to ${mobile}. Use 123456`);
     return { success: true };
 };
 
-export const requestPasswordReset = async (email: string) => {
-     const users = storageService.get('users');
-     if (!users.some((u: User) => u.email.toLowerCase() === email.toLowerCase())) {
-        throw new Error("No account found");
-     }
-     console.log(`Password reset requested for ${email}. Mock code is 'reset123'`);
-     return { success: true };
-};
-
-export const resetPassword = async (email: string, newPassword: string, code: string) => {
-    if (code !== 'reset123') {
-        throw new Error("Invalid reset code.");
+export const changePassword = async (userId: number, oldPass: string, newPass: string): Promise<{ success: true }> => {
+    await delay(500);
+    const users = storageService.get('users') as User[];
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        throw new Error("User not found.");
     }
-    // This is a mock; a real API would handle this securely.
-    console.log(`Password for ${email} has been reset.`);
+    // This is a mock. In a real app, you'd securely verify the old password.
+    // Here we just accept it if it's 'password' or the temp password.
+    const tempPassword = users[userIndex].name.toLowerCase().replace(/\s/g, '') + '123';
+    if (oldPass !== 'password' && oldPass !== tempPassword) {
+         throw new Error("Incorrect old password.");
+    }
+    users[userIndex].force_password_change = false; // The password is now changed
+    storageService.set('users', users);
     return { success: true };
 };
 
-export const changePassword = async (userId: number, oldPassword: string, newPassword: string) => {
-    // This is a highly simplified mock. A real backend would verify the old password.
-    console.log(`Attempting to change password for user ${userId}`);
-    const users: User[] = storageService.get('users');
+export const updateUserProfile = async (userId: number, data: { name: string; avatar: string }): Promise<User> => {
+    await delay(300);
+    const users = storageService.get('users') as User[];
     const userIndex = users.findIndex(u => u.id === userId);
-    if (userIndex > -1) {
-        users[userIndex].forcePasswordChange = false;
-        storageService.set('users', users);
-        return { success: true };
-    }
-    throw new Error("User not found.");
+    if (userIndex === -1) throw new Error("User not found");
+    users[userIndex] = { ...users[userIndex], ...data };
+    storageService.set('users', users);
+    return users[userIndex];
 };
 
-export const updateUserProfile = async (userId: number, profileData: { name: string, avatar: string }): Promise<User> => {
-    const users: User[] = storageService.get('users');
-    const userIndex = users.findIndex(u => u.id === userId);
-    if (userIndex > -1) {
-        users[userIndex] = { ...users[userIndex], ...profileData };
-        storageService.set('users', users);
-        return users[userIndex];
-    }
-    throw new Error("User not found.");
-};
-
-// --- Data Fetching ---
-export const getSubjects = async (): Promise<Subject[]> => storageService.get('subjects');
-export const getFaculty = async (): Promise<Faculty[]> => storageService.get('users').filter((u: User) => u.role === 'faculty');
-export const getStudents = async (): Promise<Student[]> => storageService.get('users').filter((u: User) => u.role === 'student');
-export const getClassrooms = async (): Promise<Classroom[]> => storageService.get('classrooms');
-export const getDepartments = async (): Promise<Department[]> => storageService.get('departments');
-export const getDaysOfWeek = async (): Promise<string[]> => storageService.get('daysOfWeek');
-export const getTimeSlots = async (): Promise<string[]> => storageService.get('timeSlots');
-export const getLatestSchedule = async (): Promise<ClassSchedule[]> => storageService.get('publishedSchedule');
-export const getDraftSchedule = async (): Promise<ClassSchedule[]> => storageService.get('draftSchedule');
-export const getStudentEnrollments = async(studentId: number): Promise<Enrollment[]> => storageService.get('enrollments').filter((e: Enrollment) => e.student_id === studentId);
-
-// --- Schedule Management ---
-export const saveDraftSchedule = async (schedule: Omit<ClassSchedule, 'id'>[]) => {
-    const scheduleWithIds = schedule.map((item, index) => ({...item, id: index + 1 }));
-    storageService.set('draftSchedule', scheduleWithIds);
-};
-export const publishSchedule = async () => {
-    const draft = storageService.get('draftSchedule');
-    storageService.set('publishedSchedule', draft);
-};
-
-export const getAvailableFaculty = async (subjectId: number, day: string, time: string): Promise<Faculty[]> => {
-    const allFaculty = await getFaculty();
-    const schedule = storageService.get('draftSchedule');
-    const busyFacultyIds = new Set(schedule.filter((s: ClassSchedule) => s.day === day && s.time === time).map((s: ClassSchedule) => s.faculty_id));
-    return allFaculty.filter(f => !busyFacultyIds.has(f.id));
-};
-
-// --- CRUD APIs ---
-const createCrudApi = <T extends { id: number }>(table: string) => ({
-    getAll: async (): Promise<T[]> => storageService.get(table),
-    add: async (item: Omit<T, 'id'>): Promise<T> => {
-        const items = storageService.get(table);
-        const newItem = { ...item, id: storageService.getNextId(table) } as T;
+// --- Generic CRUD Factory ---
+const createCrudApi = <T extends { id: number }>(table: 'subjects' | 'faculty' | 'students' | 'classrooms' | 'departments' | 'enrollments') => ({
+    getAll: async (): Promise<T[]> => {
+        await delay(100);
+        return storageService.get(table) as T[];
+    },
+    add: async (itemData: Omit<T, 'id'>): Promise<T> => {
+        await delay(200);
+        const items = storageService.get(table) as T[];
+        const newId = storageService.getNextId(table);
+        const newItem = { ...itemData, id: newId } as T;
         storageService.set(table, [...items, newItem]);
         return newItem;
     },
-    delete: async (id: number): Promise<void> => {
-        const items = storageService.get(table);
-        storageService.set(table, items.filter((item: T) => item.id !== id));
+    delete: async (id: number): Promise<{ success: true }> => {
+        await delay(200);
+        const items = storageService.get(table) as T[];
+        const filteredItems = items.filter(item => item.id !== id);
+        if (items.length === filteredItems.length) {
+            throw new Error(`${table} item with id ${id} not found.`);
+        }
+        storageService.set(table, filteredItems);
+        return { success: true };
     },
 });
 
+// --- Specific Entity APIs ---
 export const subjectApi = createCrudApi<Subject>('subjects');
+export const facultyApi = createCrudApi<Faculty>('faculty');
+export const studentApi = createCrudApi<Student>('students');
 export const classroomApi = createCrudApi<Classroom>('classrooms');
 export const departmentApi = createCrudApi<Department>('departments');
+export const enrollmentApi = createCrudApi<Enrollment>('enrollments');
 
-// Custom user CRUDS
-const createUserApi = (role: 'faculty' | 'student') => ({
-    getAll: async () => storageService.get('users').filter((u: User) => u.role === role),
-    add: async (userData: { name: string, email: string, department_id: number }) => {
-        const users: User[] = storageService.get('users');
-        if (users.some(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
-            throw new Error(`An account with email ${userData.email} already exists.`);
-        }
-        const newUser: User = {
-            ...userData,
-            id: storageService.getNextId('users'),
-            role,
-            avatar: 'avatar1',
-            forcePasswordChange: true, // Admin-created users must change password
-        };
-        storageService.set('users', [...users, newUser]);
-        return newUser;
-    },
-    delete: async (id: number) => {
-        let users: User[] = storageService.get('users');
-        users = users.filter(u => u.id !== id);
-        storageService.set('users', users);
-    }
-});
+// For components that use `api.getSubjects()` etc directly
+export const getSubjects = subjectApi.getAll;
+export const getFaculty = facultyApi.getAll;
+export const getStudents = studentApi.getAll;
+export const getClassrooms = classroomApi.getAll;
+export const getDepartments = departmentApi.getAll;
 
-export const facultyApi = createUserApi('faculty');
-export const studentApi = createUserApi('student');
+// --- Schedule API ---
 
-// --- Schedule Settings ---
-export const addDayOfWeek = async (day: string) => {
-    const days: string[] = storageService.get('daysOfWeek');
-    if (!days.includes(day)) {
-        storageService.set('daysOfWeek', [...days, day]);
+export const getDraftSchedule = async (): Promise<ClassSchedule[]> => {
+    await delay(100);
+    const schedules = storageService.get('schedules') as { draft: ClassSchedule[], published: ClassSchedule[] };
+    return schedules.draft;
+};
+
+export const saveDraftSchedule = async (schedule: Omit<ClassSchedule, 'id'>[]): Promise<{ success: true }> => {
+    await delay(300);
+    const schedules = storageService.get('schedules');
+    schedules.draft = schedule;
+    storageService.set('schedules', schedules);
+    return { success: true };
+};
+
+export const getLatestSchedule = async (): Promise<ClassSchedule[]> => {
+    await delay(100);
+    const schedules = storageService.get('schedules') as { draft: ClassSchedule[], published: ClassSchedule[] };
+    return schedules.published;
+};
+
+export const publishSchedule = async (): Promise<{ success: true }> => {
+    await delay(500);
+    const schedules = storageService.get('schedules');
+    if (schedules.draft.length === 0) {
+        throw new Error("Draft is empty, cannot publish.");
     }
+    schedules.published = schedules.draft.map((item, index) => ({...item, id: index + 1 }));
+    schedules.draft = [];
+    storageService.set('schedules', schedules);
+    return { success: true };
 };
-export const removeDayOfWeek = async (day: string) => {
-    const days: string[] = storageService.get('daysOfWeek');
-    storageService.set('daysOfWeek', days.filter(d => d !== day));
+
+// --- Complex Queries ---
+export const getAvailableFaculty = async (subjectId: number, day: string, time: string): Promise<Faculty[]> => {
+    await delay(400);
+    const [allFaculty, schedule] = await Promise.all([getFaculty(), getLatestSchedule()]);
+    const busyFacultyIds = new Set(
+        schedule.filter(s => s.day === day && s.time === time).map(s => s.faculty_id)
+    );
+    return allFaculty.filter(f => !busyFacultyIds.has(f.id));
 };
-export const addTimeSlot = async (time: string) => {
-    const times: string[] = storageService.get('timeSlots');
-    if (!times.includes(time)) {
-        storageService.set('timeSlots', [...times, time].sort((a,b) => parseInt(a.split('-')[0]) - parseInt(b.split('-')[0])));
+
+export const getStudentEnrollments = async (studentId: number): Promise<Enrollment[]> => {
+    const allEnrollments = await enrollmentApi.getAll();
+    return allEnrollments.filter(e => e.student_id === studentId);
+};
+
+export const updateStudentEnrollments = async (studentId: number, subjectIds: number[]): Promise<Enrollment[]> => {
+    await delay(300);
+    let enrollments = await enrollmentApi.getAll();
+    // Remove old enrollments for this student
+    enrollments = enrollments.filter(e => e.student_id !== studentId);
+    // Add new ones
+    const newEnrollments = subjectIds.map(subject_id => ({
+        id: Math.random(), // temp id, storage service will assign real one
+        student_id: studentId,
+        subject_id
+    }));
+    
+    const finalEnrollments = [...enrollments];
+    for (const enr of newEnrollments) {
+        const {id, ...rest} = enr;
+        const newEnr = await enrollmentApi.add(rest);
+        finalEnrollments.push(newEnr);
     }
+
+    return finalEnrollments.filter(e => e.student_id === studentId);
 };
-export const removeTimeSlot = async (time: string) => {
-    const times: string[] = storageService.get('timeSlots');
-    storageService.set('timeSlots', times.filter(t => t !== time));
+
+// --- Settings API ---
+export const getDaysOfWeek = async (): Promise<string[]> => {
+    await delay(50);
+    return storageService.get('days_of_week') as string[];
+};
+export const addDayOfWeek = async (day: string): Promise<string[]> => {
+    await delay(150);
+    const days = await getDaysOfWeek();
+    if (days.map(d => d.toLowerCase()).includes(day.toLowerCase())) throw new Error("Day already exists.");
+    const newDays = [...days, day];
+    storageService.set('days_of_week', newDays);
+    return newDays;
+};
+export const removeDayOfWeek = async (day: string): Promise<string[]> => {
+    await delay(150);
+    const days = await getDaysOfWeek();
+    const newDays = days.filter(d => d.toLowerCase() !== day.toLowerCase());
+    storageService.set('days_of_week', newDays);
+    return newDays;
+};
+
+export const getTimeSlots = async (): Promise<string[]> => {
+    await delay(50);
+    return storageService.get('time_slots') as string[];
+};
+export const addTimeSlot = async (time: string): Promise<string[]> => {
+    await delay(150);
+    const times = await getTimeSlots();
+    if (times.includes(time)) throw new Error("Time slot already exists.");
+    const newTimes = [...times, time];
+    storageService.set('time_slots', newTimes);
+    return newTimes;
+};
+export const removeTimeSlot = async (time: string): Promise<string[]> => {
+    await delay(150);
+    const times = await getTimeSlots();
+    const newTimes = times.filter(t => t !== time);
+    storageService.set('time_slots', newTimes);
+    return newTimes;
 };

@@ -14,7 +14,7 @@ export const hydrateSchedule = (
 
     return schedule.map((entry, index) => ({
         ...entry,
-        instance_id: `class-${entry.id}-${index}`, // More robust unique ID for dnd
+        instance_id: `class-${entry.id || index}-${entry.subject_id}-${entry.faculty_id}`, // More robust unique ID for dnd
         subject: subjectsMap.get(entry.subject_id) || 'Unknown Subject',
         faculty: facultyMap.get(entry.faculty_id) || 'Unknown Faculty',
         classroom: classroomsMap.get(entry.classroom_id) || 'Unknown Classroom',

@@ -1,8 +1,8 @@
 // components/ProfileModal.tsx
 import React, { useState, useEffect } from 'react';
-import * as api from '../services/api';
-import type { User } from '../types';
-import { AVATARS } from './avatars';
+import * as api from '../services/api.ts';
+import type { User } from '../types.ts';
+import { AVATARS } from './avatars.ts';
 
 interface ProfileModalProps {
     user: User;

@@ -1,6 +1,5 @@
 // components/GeneratorView.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-// FIX: Corrected import path
 // FIX: Add file extensions to imports
 import * as api from '../services/api.ts';
 // FIX: Corrected import path
@@ -13,7 +12,7 @@ import ConflictReport from './ConflictReport.tsx';
 import ReplacementFinderModal from './ReplacementFinderModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
 import { useToast } from '../contexts/ToastContext.tsx';
-// FIX: Corrected import path
+// FIX: Add file extensions to imports
 import type { Subject, Faculty, Classroom, HydratedClassSchedule, Conflict } from '../types.ts';
 import type { DropResult } from '../libs/react-beautiful-dnd.ts';
 

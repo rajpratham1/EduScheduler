@@ -69,7 +69,7 @@ const SubjectManager: React.FC = () => {
 
         try {
             const { id, ...newSubjectData } = optimisticSubject;
-            const addedSubject = await subjectApi.add(newSubjectData);
+            const addedSubject = await subjectApi.add(newSubjectData as Omit<Subject, 'id'>);
             addToast("Subject added!", "success");
             setSubjectList(prev => prev.map(s => s.id === tempId ? addedSubject : s));
         } catch(err: any) {

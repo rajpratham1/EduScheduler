@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 // FIX: Add file extensions to imports
 import * as api from '../services/api.ts';
+// FIX: Add file extensions to imports
 import type { User } from '../types.ts';
 import AuthLayout from './auth/AuthLayout.tsx';
 import AuthInput from './auth/AuthInput.tsx';
@@ -14,8 +15,8 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigate, message }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('admin@test.com');
+    const [password, setPassword] = useState('password');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 

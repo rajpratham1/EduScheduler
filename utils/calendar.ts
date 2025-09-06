@@ -1,5 +1,3 @@
-
-
 // FIX: Add file extension to import
 import type { HydratedClassSchedule } from '../types.ts';
 

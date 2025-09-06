@@ -8,17 +8,20 @@ import { hydrateSchedule } from '../utils/scheduleUtils.ts';
 
 interface WorkloadAnalysisModalProps {
     student: Student | null;
+    // FIX: Add missing 'isOpen' prop to control modal visibility.
+    isOpen: boolean;
     onClose: () => void;
 }
 
-const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, onClose }) => {
+const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, isOpen, onClose }) => {
     const [schedule, setSchedule] = useState<HydratedClassSchedule[]>([]);
     const [analysis, setAnalysis] = useState<string>('');
     const [days, setDays] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     
     useEffect(() => {
-        if (student) {
+        // FIX: Only fetch and analyze data when the modal is open and a student is provided.
+        if (student && isOpen) {
             const fetchAndAnalyze = async () => {
                 setIsLoading(true);
                 setAnalysis('');
@@ -61,9 +64,10 @@ const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, 
             };
             fetchAndAnalyze();
         }
-    }, [student]);
+    }, [student, isOpen]);
 
-    if (!student) return null;
+    // FIX: Render nothing if the modal is not open or if there's no student.
+    if (!isOpen || !student) return null;
 
     return (
         <div className="fixed inset-0 bg-black/60 dark:bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
