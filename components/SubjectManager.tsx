@@ -1,10 +1,13 @@
 // components/SubjectManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { subjectApi } from '../services/api';
 import * as api from '../services/api';
 import type { Subject, Department } from '../types';
 import { BookOpenIcon, TrashIcon, MagnifyingGlassIcon } from './icons';
 import { SkeletonLoader } from './SkeletonLoader';
+import ConfirmationModal from './ConfirmationModal';
+import { useToast } from '../contexts/ToastContext';
 
 const SubjectManager: React.FC = () => {
     const [subjectList, setSubjectList] = useState<Subject[]>([]);
@@ -14,9 +17,10 @@ const SubjectManager: React.FC = () => {
     const [newSubjectHours, setNewSubjectHours] = useState<number | string>(3);
     const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | string>('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+    const { addToast } = useToast();
 
     const loadData = useCallback(async () => {
-        setIsLoading(true);
         try {
             const [subjects, depts] = await Promise.all([
                 subjectApi.getAll(),
@@ -27,12 +31,16 @@ const SubjectManager: React.FC = () => {
             if (depts.length > 0 && !selectedDepartmentId) {
                 setSelectedDepartmentId(depts[0].id);
             }
-        } finally {
+        } catch(err) {
+            addToast("Failed to load subject data.", "error");
+        }
+        finally {
             setIsLoading(false);
         }
-    }, [selectedDepartmentId]);
+    }, [selectedDepartmentId, addToast]);
 
     useEffect(() => {
+        setIsLoading(true);
         loadData();
     }, [loadData]);
 
@@ -45,16 +53,47 @@ const SubjectManager: React.FC = () => {
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newSubjectName || !newSubjectHours || !selectedDepartmentId) return;
-        await subjectApi.add({ name: newSubjectName, weekly_hours: Number(newSubjectHours), department_id: Number(selectedDepartmentId) });
+
+        const tempId = Date.now();
+        const optimisticSubject: Subject = {
+            id: tempId,
+            name: newSubjectName,
+            weekly_hours: Number(newSubjectHours),
+            department_id: Number(selectedDepartmentId)
+        };
+
+        setSubjectList(prev => [...prev, optimisticSubject]);
         setNewSubjectName('');
         setNewSubjectHours(3);
-        loadData();
+
+        try {
+            const { id, ...newSubjectData } = optimisticSubject;
+            const addedSubject = await subjectApi.add(newSubjectData);
+            addToast("Subject added!", "success");
+            setSubjectList(prev => prev.map(s => s.id === tempId ? addedSubject : s));
+        } catch(err: any) {
+            addToast(err.message || "Failed to add subject.", "error");
+            setSubjectList(prev => prev.filter(s => s.id !== tempId));
+        }
     };
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm('Are you sure you want to delete this subject?')) {
-            await subjectApi.delete(id);
-            loadData();
+    const handleDelete = (subject: Subject) => {
+        setSubjectToDelete(subject);
+    };
+
+    const executeDelete = async () => {
+        if (!subjectToDelete) return;
+
+        const originalList = [...subjectList];
+        setSubjectList(prev => prev.filter(s => s.id !== subjectToDelete.id));
+        setSubjectToDelete(null);
+
+        try {
+            await subjectApi.delete(subjectToDelete.id);
+            addToast("Subject deleted.", "success");
+        } catch(err: any) {
+            addToast(err.message || "Failed to delete subject.", "error");
+            setSubjectList(originalList);
         }
     };
     
@@ -99,25 +138,34 @@ const SubjectManager: React.FC = () => {
             <div className="max-h-60 overflow-y-auto pr-2">
                 {isLoading ? <SkeletonLoader /> : (
                     <ul className="space-y-2">
-                        {filteredSubjects.length > 0 ? filteredSubjects.map(subject => (
-                            <li key={subject.id} className="flex justify-between items-center p-2 bg-white dark:bg-slate-700/50 border dark:border-slate-200 dark:border-slate-700 rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] animate-fadeInUp">
+                        <AnimatePresence>
+                        {filteredSubjects.length > 0 ? filteredSubjects.map((subject, i) => (
+                            <motion.li key={subject.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2, delay: i * 0.05 }} className="flex justify-between items-center p-2 bg-white dark:bg-slate-700/50 border dark:border-slate-200 dark:border-slate-700 rounded-md">
                                 <div>
                                     <p className="font-medium text-sm text-slate-800 dark:text-slate-200">{subject.name}</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">{subject.weekly_hours} hours/week</p>
                                 </div>
-                                <button onClick={() => handleDelete(subject.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full">
+                                <button onClick={() => handleDelete(subject)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full">
                                     <TrashIcon className="w-4 h-4" />
                                 </button>
-                            </li>
+                            </motion.li>
                         )) : (
-                            <div className="text-center py-8 animate-fadeInUp">
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
                                  <BookOpenIcon className="w-10 h-10 mx-auto text-slate-400" />
                                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No subjects found.</p>
-                            </div>
+                            </motion.div>
                         )}
+                        </AnimatePresence>
                     </ul>
                 )}
             </div>
+             <ConfirmationModal 
+                isOpen={!!subjectToDelete}
+                onClose={() => setSubjectToDelete(null)}
+                onConfirm={executeDelete}
+                title="Delete Subject"
+                message={`Are you sure you want to delete ${subjectToDelete?.name}?`}
+            />
         </div>
     );
 };

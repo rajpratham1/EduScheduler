@@ -5,9 +5,9 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'faculty' | 'student';
+  avatar: string;
+  forcePasswordChange?: boolean;
 }
-
-export type PreviewUser = Pick<User, 'id' | 'name' | 'role' | 'email'>;
 
 export interface Department {
     id: number;
@@ -28,13 +28,6 @@ export interface Faculty {
     department_id: number;
 }
 
-export interface Classroom {
-    id: number;
-    name: string;
-    type: string;
-    capacity: number;
-}
-
 export interface Student {
     id: number;
     name: string;
@@ -42,24 +35,26 @@ export interface Student {
     department_id: number;
 }
 
-export interface Enrollment {
+export interface Classroom {
     id: number;
-    student_id: number;
-    subject_id: number;
+    name: string;
+    type: 'Lecture' | 'Lab' | 'Seminar' | string;
+    capacity: number;
 }
 
+// Basic schedule entry from the database or AI generation
 export interface ClassSchedule {
-    id: number;
-    day: string; // e.g., 'Monday'
-    time: string; // e.g., '9-10'
+    id?: number; // Optional because new schedules might not have an ID yet
+    day: string;
+    time: string;
     subject_id: number;
     faculty_id: number;
     classroom_id: number;
 }
 
-// A "hydrated" version of ClassSchedule with names instead of just IDs
+// Enriched schedule entry with names for UI display
 export interface HydratedClassSchedule extends ClassSchedule {
-    instance_id: string; // Unique ID for drag-and-drop
+    instance_id: string; // Unique ID for React components (e.g., drag and drop)
     subject: string;
     faculty: string;
     classroom: string;
@@ -69,4 +64,17 @@ export interface Conflict {
     type: 'Hard' | 'Soft';
     message: string;
     severity: 'error' | 'warning';
+}
+
+export interface StudentEnrollment {
+    id: number;
+    student_id: number;
+    subject_id: number;
+}
+
+// A simplified user object for the preview modal
+export interface PreviewUser {
+    id: number;
+    name: string;
+    role: 'student' | 'faculty';
 }

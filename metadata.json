@@ -1,5 +1,5 @@
 {
-  "name": "EduScheduler",
+  "name": "EduScheduler(8)",
   "description": "An intelligent web application that uses AI to automatically generate optimized class schedules based on user-defined constraints. It helps educational institutions create conflict-free, balanced timetables for faculties, students, and classrooms.",
   "requestFramePermissions": []
 }

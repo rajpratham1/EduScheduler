@@ -41,7 +41,6 @@ export const DragDropContext: React.FC<DragDropContextProps> = ({ children, onDr
 interface DroppableProvided {
     innerRef: React.Ref<any>;
     placeholder: React.ReactNode;
-    // FIX: Explicitly allow data-* attributes on droppableProps.
     droppableProps: React.HTMLAttributes<HTMLDivElement> & { 'data-rbd-droppable-id': string };
 }
 interface DroppableStateSnapshot {
@@ -49,7 +48,10 @@ interface DroppableStateSnapshot {
     draggingOverWith?: DraggableId | null;
 }
 interface DroppableProps {
-    children: (provided: DroppableProvided, snapshot: DroppableStateSnapshot) => React.ReactElement<HTMLElement>;
+    // FIX: Changed children return type from React.ReactElement<HTMLElement> to React.ReactElement.
+    // Using <HTMLElement> incorrectly infers the props type as the HTMLElement DOM interface,
+    // causing type conflicts. React.ReactElement defaults to the correct <any> props.
+    children: (provided: DroppableProvided, snapshot: DroppableStateSnapshot) => React.ReactElement;
     droppableId: DroppableId;
     isDropDisabled?: boolean;
 }
@@ -82,7 +84,10 @@ interface DraggableStateSnapshot {
     draggingOver?: DroppableId | null;
 }
 interface DraggableProps {
-    children: (provided: DraggableProvided, snapshot: DraggableStateSnapshot) => React.ReactElement<HTMLElement>;
+    // FIX: Changed children return type from React.ReactElement<HTMLElement> to React.ReactElement.
+    // This resolves a React.cloneElement overload error by preventing incorrect type inference
+    // for the element's props.
+    children: (provided: DraggableProvided, snapshot: DraggableStateSnapshot) => React.ReactElement;
     draggableId: DraggableId;
     index: number;
     isDragDisabled?: boolean;
@@ -99,10 +104,13 @@ export const Draggable: React.FC<DraggableProps> = ({ children, draggableId }) =
     
     // The actual drag logic would be complex. For a shim, we can just render the children.
     const child = children(provided, snapshot);
-
-    // FIX: Explicitly type the props object for cloneElement to resolve overload ambiguity.
-    // This ensures that React's camelCased event handlers like onDragStart are recognized.
-    const dragProps = {
+    
+    // Explicitly type the props object for cloneElement to resolve overload ambiguity.
+    // FIX: Used Omit to remove the 'translate' property from the type, as its type
+    // definition ('string') conflicts with the one expected by React.cloneElement ('boolean').
+    // FIX: Also omitting 'part' property from React.HTMLAttributes to resolve a type conflict with React.cloneElement, which expects the 'part' attribute to be a DOMTokenList, not a string.
+    // FIX: Omit 'children' to resolve conflict between ReactNode and HTMLCollection types.
+    const dragProps: Omit<React.HTMLAttributes<HTMLElement>, 'translate' | 'part' | 'children'> & { draggable: boolean } = {
         draggable: true,
         onDragStart: (e: React.DragEvent<HTMLElement>) => {
             e.dataTransfer.setData("draggableId", draggableId);
@@ -111,7 +119,6 @@ export const Draggable: React.FC<DraggableProps> = ({ children, draggableId }) =
         },
         onDragEnd: (e: React.DragEvent<HTMLElement>) => {
              // This is a simplified drag/drop simulation.
-             // It doesn't find the correct drop target but shows the principle.
         },
         onDrop: (e: React.DragEvent<HTMLElement>) => {
             e.preventDefault();
@@ -139,6 +146,5 @@ export const Draggable: React.FC<DraggableProps> = ({ children, draggableId }) =
         }
     };
 
-    // To make it "draggable" in a mock sense, we can add some basic HTML drag attributes.
     return React.cloneElement(child, dragProps);
 };

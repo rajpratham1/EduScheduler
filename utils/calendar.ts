@@ -1,82 +1,51 @@
-// Fix: Use a relative path for the local type import.
-// FIX: Replace `ScheduleEntry` with `HydratedClassSchedule` as `ScheduleEntry` is not an exported type.
+
 import type { HydratedClassSchedule } from '../types';
-import { DAYS_OF_WEEK } from '../constants';
 
-// Helper to format a date into YYYYMMDDTHHMMSSZ format for iCalendar
-const toICSDate = (date: Date): string => {
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-};
+// Simple function to get the date of the next instance of a given weekday
+const getNextDayOfWeek = (dayName: string, daysOfWeek: string[]): Date => {
+    const today = new Date();
+    const dayIndex = daysOfWeek.map(d => d.toLowerCase()).indexOf(dayName.toLowerCase());
+    if (dayIndex === -1) return today; // Fallback
 
-// Helper to get the date of the next occurrence of a given day of the week
-const getNextDayOfWeek = (dayOfWeek: string, hour: number, minute: number): Date => {
-    const dayIndex = DAYS_OF_WEEK.findIndex(d => d.toLowerCase() === dayOfWeek.toLowerCase());
-    if (dayIndex === -1) throw new Error("Invalid day of the week");
-
-    const now = new Date();
-    const resultDate = new Date(now.getTime());
-
-    // Set time first
-    resultDate.setHours(hour, minute, 0, 0);
-
-    // Find the next correct day
-    const currentDay = now.getDay(); // Sunday = 0, Monday = 1...
-    // Adjust dayIndex to match getDay() (Monday=0 in our array, but 1 in getDay())
-    const targetDay = (dayIndex + 1) % 7; 
-    
-    let diff = targetDay - currentDay;
-    if (diff <= 0 && now.getHours() > hour) {
-      diff += 7;
-    } else if (diff < 0) {
-      diff += 7;
+    const todayDayIndex = (today.getDay() + 6) % 7; // Monday is 0
+    let dayDifference = dayIndex - todayDayIndex;
+    if (dayDifference < 0) {
+        dayDifference += 7;
     }
 
+    const nextDate = new Date();
+    nextDate.setDate(today.getDate() + dayDifference);
+    return nextDate;
+};
 
-    resultDate.setDate(now.getDate() + diff);
+export const getIcs = (classInfo: HydratedClassSchedule, daysOfWeek: string[]): string => {
+    const date = getNextDayOfWeek(classInfo.day, daysOfWeek);
+    const [startHour] = classInfo.time.split('-').map(Number);
     
-    return resultDate;
+    // Adjust for PM hours if necessary (simple assumption for "1-2" etc.)
+    const adjustedStartHour = startHour < 9 ? startHour + 12 : startHour;
+    const endHour = adjustedStartHour + 1;
+    
+    date.setHours(adjustedStartHour, 0, 0, 0);
+    const startDate = date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    date.setHours(endHour, 0, 0, 0);
+    const endDate = date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const event = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'BEGIN:VEVENT',
+        `UID:${classInfo.instance_id}@eduscheduler.com`,
+        `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'}`,
+        `DTSTART:${startDate}`,
+        `DTEND:${endDate}`,
+        `SUMMARY:${classInfo.subject}`,
+        `DESCRIPTION:Faculty: ${classInfo.faculty}\\nClassroom: ${classInfo.classroom}`,
+        `LOCATION:${classInfo.classroom}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].join('\n');
+
+    return `data:text/calendar;charset=utf-8,${encodeURIComponent(event)}`;
 }
-
-export const generateICSFile = (entry: HydratedClassSchedule) => {
-    if (!entry.subject || !entry.faculty || !entry.classroom) return;
-
-    try {
-        // Parse time string like "9-10" or "10:30-11:30"
-        const timeParts = entry.time.split(/[-]/);
-        const [startHour, startMinute] = timeParts[0].split(':').map(Number);
-        const [endHour, endMinute] = timeParts[1].split(':').map(Number);
-
-        const startDate = getNextDayOfWeek(entry.day, startHour, startMinute || 0);
-        const endDate = getNextDayOfWeek(entry.day, endHour, endMinute || 0);
-
-        const uid = `${startDate.getTime()}-${entry.subject.replace(/\s/g, '')}@aicalendar.com`;
-        const stamp = toICSDate(new Date());
-
-        const icsContent = [
-            'BEGIN:VCALENDAR',
-            'VERSION:2.0',
-            'PRODID:-//AI Timetable Generator//EN',
-            'BEGIN:VEVENT',
-            `UID:${uid}`,
-            `DTSTAMP:${stamp}`,
-            `DTSTART:${toICSDate(startDate)}`,
-            `DTEND:${toICSDate(endDate)}`,
-            `SUMMARY:${entry.subject}`,
-            `LOCATION:${entry.classroom}`,
-            `DESCRIPTION:Taught by: ${entry.faculty}`,
-            'END:VEVENT',
-            'END:VCALENDAR'
-        ].join('\n');
-
-        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `${entry.subject}.ics`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } catch (error) {
-        console.error("Failed to generate ICS file:", error);
-        alert("Sorry, there was an error creating the calendar event file.");
-    }
-};

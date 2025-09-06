@@ -1,252 +1,231 @@
 // components/GeneratorView.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import type { DropResult } from '../libs/react-beautiful-dnd';
-import { TimetableGrid } from './TimetableGrid';
+// FIX: Corrected import path
+import * as api from '../services/api';
+// FIX: Corrected import path
+import * as geminiService from '../services/geminiService';
+import { hydrateSchedule, dehydrateSchedule } from '../utils/scheduleUtils';
+import { detectConflicts } from '../utils/conflictDetector';
+import TimetableGrid from './TimetableGrid';
 import { Loader } from './Loader';
 import ConflictReport from './ConflictReport';
-import { AnalyticsDashboard } from './AnalyticsDashboard';
 import ReplacementFinderModal from './ReplacementFinderModal';
-import * as api from '../services/api';
-import * as geminiService from '../services/geminiService';
-import { hydrateSchedule, dehydrateSchedule, getUniqueTimeSlots } from '../utils/scheduleUtils';
-import { detectConflicts } from '../utils/conflictDetector';
-import type { Conflict, HydratedClassSchedule, Subject, Faculty, Classroom, ClassSchedule } from '../types';
-import { MagicWandIcon, CheckCircleIcon, CloudArrowUpIcon, DocumentArrowDownIcon } from './icons';
-
-type ViewStatus = 'idle' | 'loading' | 'generating' | 'error';
-type DraftStatus = 'synced' | 'unsaved' | 'saving';
+import ConfirmationModal from './ConfirmationModal';
+import { useToast } from '../contexts/ToastContext';
+// FIX: Corrected import path
+import type { Subject, Faculty, Classroom, HydratedClassSchedule, Conflict } from '../types';
+import type { DropResult } from '../libs/react-beautiful-dnd';
 
 const GeneratorView: React.FC = () => {
-    const [viewStatus, setViewStatus] = useState<ViewStatus>('loading');
-    const [draftStatus, setDraftStatus] = useState<DraftStatus>('synced');
-    const [error, setError] = useState<string | null>(null);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [faculty, setFaculty] = useState<Faculty[]>([]);
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+    const [days, setDays] = useState<string[]>([]);
+    const [timeSlots, setTimeSlots] = useState<string[]>([]);
+    const [hydratedSchedule, setHydratedSchedule] = useState<HydratedClassSchedule[]>([]);
     
-    const [draftSchedule, setDraftSchedule] = useState<HydratedClassSchedule[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [constraints, setConstraints] = useState('- Mr. Smith is unavailable on Fridays.\n- Physics I must be in a Lab.');
     const [conflicts, setConflicts] = useState<Conflict[]>([]);
-    const [constraints, setConstraints] = useState('');
-    
     const [classToReplace, setClassToReplace] = useState<HydratedClassSchedule | null>(null);
+    const [isConfirmingPublish, setIsConfirmingPublish] = useState(false);
+    const [error, setError] = useState('');
+    const { addToast } = useToast();
 
-    // Master Data
-    const [allSubjects, setAllSubjects] = useState<Subject[]>([]);
-    const [allFaculty, setAllFaculty] = useState<Faculty[]>([]);
-    const [allClassrooms, setAllClassrooms] = useState<Classroom[]>([]);
-    
-    const timeSlots = useMemo(() => getUniqueTimeSlots(draftSchedule), [draftSchedule]);
-    
     const loadInitialData = useCallback(async () => {
-        setViewStatus('loading');
+        setIsLoading(true);
         try {
-            const [subjects, faculty, classrooms, scheduleData] = await Promise.all([
+            const [
+                subjectsData, 
+                facultyData, 
+                classroomsData,
+                daysData,
+                timeSlotsData,
+                draftScheduleData
+            ] = await Promise.all([
                 api.getSubjects(),
                 api.getFaculty(),
                 api.getClassrooms(),
+                api.getDaysOfWeek(),
+                api.getTimeSlots(),
                 api.getDraftSchedule(),
             ]);
-            setAllSubjects(subjects);
-            setAllFaculty(faculty);
-            setAllClassrooms(classrooms);
-            setDraftSchedule(hydrateSchedule(scheduleData, subjects, faculty, classrooms));
-            setConstraints("- Science classes must be in the Science Lab.\n- Mr. Smith is unavailable on Fridays.");
-            setViewStatus('idle');
-        } catch (e) {
-            setError("Failed to load initial application data.");
-            setViewStatus('error');
+            setSubjects(subjectsData);
+            setFaculty(facultyData);
+            setClassrooms(classroomsData);
+            setDays(daysData);
+            setTimeSlots(timeSlotsData);
+
+            if (draftScheduleData.length > 0) {
+                const hydrated = hydrateSchedule(draftScheduleData, subjectsData, facultyData, classroomsData);
+                setHydratedSchedule(hydrated);
+            }
+        } catch(err) {
+            const errorMessage = 'Failed to load initial scheduling data.';
+            setError(errorMessage);
+            addToast(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
         }
-    }, []);
+    }, [addToast]);
 
     useEffect(() => {
         loadInitialData();
     }, [loadInitialData]);
 
+    // Recalculate conflicts whenever the schedule or constraints change
     useEffect(() => {
-        setConflicts(detectConflicts(draftSchedule, allSubjects, constraints));
-    }, [draftSchedule, allSubjects, constraints]);
+        if (hydratedSchedule.length > 0) {
+            const detected = detectConflicts(hydratedSchedule, subjects, constraints);
+            setConflicts(detected);
+        } else {
+            setConflicts([]);
+        }
+    }, [hydratedSchedule, subjects, constraints]);
 
     const handleGenerate = async () => {
-        setViewStatus('generating');
-        setError(null);
+        setIsGenerating(true);
+        setError('');
         try {
-            const generatedSchedule = await geminiService.generateTimetable({
-                subjects: allSubjects,
-                faculty: allFaculty,
-                classrooms: allClassrooms,
-                timeSlots: timeSlots.join(', '),
-                constraints: constraints,
-            });
-            await handleSaveDraft(generatedSchedule);
+            const generated = await geminiService.generateTimetable(subjects, faculty, classrooms, days, timeSlots, constraints);
+            const hydrated = hydrateSchedule(generated, subjects, faculty, classrooms);
+            setHydratedSchedule(hydrated);
+            addToast('New schedule generated successfully!', 'success');
         } catch (err: any) {
-            setError(err.message || 'An unknown error occurred during generation.');
-            setViewStatus('error');
+            const errorMessage = err.message || 'An unexpected error occurred during generation.';
+            setError(errorMessage);
+            addToast(errorMessage, 'error');
         } finally {
-            if (viewStatus === 'generating') {
-                setViewStatus('idle');
-            }
+            setIsGenerating(false);
         }
-    };
-
-    const handleSaveDraft = async (newSchedule?: Omit<ClassSchedule, 'id'>[]) => {
-        setDraftStatus('saving');
-        try {
-            const scheduleToSave = newSchedule || dehydrateSchedule(draftSchedule);
-            const savedData = await api.saveDraftSchedule(scheduleToSave);
-            setDraftSchedule(hydrateSchedule(savedData, allSubjects, allFaculty, allClassrooms));
-            setDraftStatus('synced');
-        } catch(err) {
-            setError("Failed to save draft.");
-            setViewStatus('error');
-            setDraftStatus('unsaved');
-        }
-    };
-
-    const handlePublish = async () => {
-        if (conflicts.some(c => c.severity === 'error')) {
-            alert("Cannot publish a schedule with hard conflicts. Please resolve them first.");
-            return;
-        }
-        if (draftStatus === 'unsaved') {
-            if(!window.confirm("You have unsaved changes in your draft. Are you sure you want to publish the last saved version?")) {
-                return;
-            }
-        }
-        await api.publishSchedule();
-        alert("Schedule published successfully! Faculty and students can now see the updated timetable.");
     };
     
     const handleDragEnd = (result: DropResult) => {
         const { source, destination, draggableId } = result;
+        if (!destination) return;
 
-        if (!destination || !source) return;
-
-        const updatedSchedule = [...draftSchedule];
-        const movedClassIndex = updatedSchedule.findIndex(c => c.instance_id === draggableId);
-        if (movedClassIndex === -1) return;
-
-        const [movedClass] = updatedSchedule.splice(movedClassIndex, 1);
-        
         const [destDay, destTime] = destination.droppableId.split('|');
-        movedClass.day = destDay;
-        movedClass.time = destTime;
-
-        const targetSlotIndex = updatedSchedule.findIndex(c => c.day === destDay && c.time === destTime);
         
-        if (targetSlotIndex > -1) {
-            const classToSwap = updatedSchedule.splice(targetSlotIndex, 1)[0];
-            const [sourceDay, sourceTime] = source.droppableId.split('|');
-            classToSwap.day = sourceDay;
-            classToSwap.time = sourceTime;
-            updatedSchedule.push(classToSwap);
+        setHydratedSchedule(prev => {
+            const newSchedule = [...prev];
+            const classIndex = newSchedule.findIndex(c => c.instance_id === draggableId);
+            if(classIndex > -1) {
+                newSchedule[classIndex].day = destDay;
+                newSchedule[classIndex].time = destTime;
+            }
+            return newSchedule;
+        });
+    };
+
+    const handleSaveDraft = async () => {
+        try {
+            const dehydrated = dehydrateSchedule(hydratedSchedule);
+            await api.saveDraftSchedule(dehydrated);
+            addToast('Draft schedule saved successfully!', 'success');
+        } catch(err) {
+            addToast('Failed to save draft.', 'error');
         }
-        
-        updatedSchedule.push(movedClass);
+    };
+    
+    const handlePublish = () => {
+        if (conflicts.some(c => c.severity === 'error')) {
+            addToast('Cannot publish with hard conflicts. Please resolve them first.', 'error');
+            return;
+        }
+        setIsConfirmingPublish(true);
+    };
 
-        setDraftSchedule(updatedSchedule);
-        setDraftStatus('unsaved');
+    const executePublish = async () => {
+        setIsConfirmingPublish(false);
+        try {
+            await handleSaveDraft(); // Ensure draft is saved first
+            await api.publishSchedule();
+            addToast('Schedule published successfully!', 'success');
+        } catch(err) {
+            addToast('Failed to publish schedule.', 'error');
+        }
+    };
+
+    const handleFindReplacement = (classInfo: HydratedClassSchedule) => {
+        setClassToReplace(classInfo);
     };
 
     const handleSelectReplacement = (newFacultyId: number) => {
-        if (!classToReplace) return;
-
-        const updatedSchedule = draftSchedule.map(item => {
-            if (item.instance_id === classToReplace.instance_id) {
-                const newFacultyName = allFaculty.find(f => f.id === newFacultyId)?.name || 'Unknown';
-                return { ...item, faculty_id: newFacultyId, faculty: newFacultyName };
-            }
-            return item;
-        });
-
-        setDraftSchedule(updatedSchedule);
-        setDraftStatus('unsaved');
+        if (classToReplace) {
+             setHydratedSchedule(prev => {
+                const newSchedule = [...prev];
+                const classIndex = newSchedule.findIndex(c => c.instance_id === classToReplace.instance_id);
+                if(classIndex > -1) {
+                    newSchedule[classIndex].faculty_id = newFacultyId;
+                    // Re-hydrate the single entry
+                    const facultyMember = faculty.find(f => f.id === newFacultyId);
+                    newSchedule[classIndex].faculty = facultyMember ? facultyMember.name : 'Unknown Faculty';
+                }
+                return newSchedule;
+            });
+        }
         setClassToReplace(null);
     };
 
-    if (viewStatus === 'loading') {
-        return <div className="text-center p-12"><p className="text-slate-500 dark:text-slate-400">Loading Generator...</p></div>;
+    if (isLoading) {
+        return <div className="text-center p-8">Loading data...</div>;
     }
 
-    const DraftStatusIndicator: React.FC = () => {
-        if (draftStatus === 'saving') return <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Saving...</span>;
-        if (draftStatus === 'unsaved') return <span className="text-xs font-medium text-red-600 dark:text-red-400">Unsaved Changes</span>;
-        return <span className="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1"><CheckCircleIcon className="w-4 h-4" /> Synced</span>;
-    };
-
     return (
-        <div className="space-y-8">
-            <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Timetable Generation</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 p-4 rounded-lg">
-                        <h3 className="font-semibold text-slate-700 dark:text-slate-200">Data Summary</h3>
-                        <ul className="text-sm text-slate-600 dark:text-slate-400 mt-2 space-y-1">
-                            <li><span className="font-medium text-slate-800 dark:text-slate-200">{allFaculty.length}</span> Faculty Members</li>
-                            <li><span className="font-medium text-slate-800 dark:text-slate-200">{allSubjects.length}</span> Subjects</li>
-                            <li><span className="font-medium text-slate-800 dark:text-slate-200">{allClassrooms.length}</span> Classrooms</li>
-                        </ul>
-                    </div>
-                     <div>
-                        <label htmlFor="constraints" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            High-Level Constraints
-                        </label>
+        <div className="space-y-6">
+            <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">AI Schedule Generator</h2>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="constraints" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Constraints & Preferences</label>
                         <textarea
                             id="constraints"
+                            rows={4}
                             value={constraints}
                             onChange={(e) => setConstraints(e.target.value)}
-                            rows={5}
-                            disabled={viewStatus === 'generating'}
-                            placeholder="e.g., - Mr. Smith is unavailable on Fridays."
-                            className="block w-full text-sm border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-slate-200"
+                            className="mt-1 block w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-md shadow-sm text-sm dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="e.g., - Prof. Smith is unavailable on Fridays.&#10;- Physics I must be in a Lab."
                         />
                     </div>
-                </div>
-                 <div className="mt-6 flex flex-wrap gap-4 items-center justify-between">
-                    <button
-                        onClick={handleGenerate}
-                        disabled={viewStatus === 'generating'}
-                        className="inline-flex items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
-                    >
-                        <MagicWandIcon className="w-5 h-5"/>
-                        {viewStatus === 'generating' ? 'Generating...' : 'Generate Draft with AI'}
-                    </button>
-                     <div className="flex flex-wrap items-center gap-4">
-                        <DraftStatusIndicator />
-                        <button
-                            onClick={() => handleSaveDraft()}
-                            disabled={draftStatus !== 'unsaved'}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <DocumentArrowDownIcon className="w-5 h-5"/>
-                            Save Draft
-                        </button>
-                        <button
-                            onClick={handlePublish}
-                            disabled={conflicts.some(c => c.severity === 'error')}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md shadow-sm disabled:bg-green-400 disabled:cursor-not-allowed"
-                        >
-                            <CloudArrowUpIcon className="w-5 h-5" />
-                            Publish
-                        </button>
+                    <div className="flex flex-col justify-between">
+                         <div className="space-y-2">
+                             <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Actions</h4>
+                             <div className="flex flex-wrap gap-2">
+                                <button onClick={handleGenerate} disabled={isGenerating} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm disabled:bg-indigo-400 active:scale-95 transition-transform">
+                                    {isGenerating ? 'Generating...' : 'Generate with AI'}
+                                </button>
+                                <button onClick={handleSaveDraft} className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 active:scale-95 transition-transform">
+                                    Save Draft
+                                </button>
+                                <button onClick={handlePublish} className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md shadow-sm active:scale-95 transition-transform">
+                                    Publish
+                                </button>
+                            </div>
+                        </div>
+                        {error && !isGenerating && <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>}
                     </div>
-                 </div>
+                </div>
             </div>
 
-            {viewStatus === 'generating' && <Loader />}
-            {viewStatus === 'error' && <p className="text-center text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/20 p-4 rounded-md">{error}</p>}
+            {isGenerating && <Loader />}
             
-            {viewStatus !== 'generating' && draftSchedule.length > 0 && (
-                <div className="space-y-6">
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Review and Edit Draft Schedule</h2>
-                        <p className="text-slate-600 dark:text-slate-400">Drag and drop classes to make manual adjustments.</p>
-                    </div>
+            {!isGenerating && hydratedSchedule.length > 0 && (
+                <>
                     <ConflictReport conflicts={conflicts} />
-                    <TimetableGrid
-                        schedule={draftSchedule}
+                    <TimetableGrid 
+                        schedule={hydratedSchedule}
+                        days={days}
                         timeSlots={timeSlots}
-                        isEditable={true}
                         onDragEnd={handleDragEnd}
-                        onFindReplacement={(classInfo) => setClassToReplace(classInfo)}
+                        onFindReplacement={handleFindReplacement}
                     />
-                    <AnalyticsDashboard schedule={draftSchedule} faculty={allFaculty} classrooms={allClassrooms} timeSlots={timeSlots} />
+                </>
+            )}
+
+            {!isGenerating && hydratedSchedule.length === 0 && (
+                <div className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg">
+                    <p className="text-slate-500 dark:text-slate-400">Click "Generate with AI" to create a new schedule.</p>
                 </div>
             )}
 
@@ -254,6 +233,15 @@ const GeneratorView: React.FC = () => {
                 classInfo={classToReplace}
                 onClose={() => setClassToReplace(null)}
                 onSelect={handleSelectReplacement}
+            />
+            <ConfirmationModal
+                isOpen={isConfirmingPublish}
+                onClose={() => setIsConfirmingPublish(false)}
+                onConfirm={executePublish}
+                title="Publish Schedule"
+                message="Are you sure you want to publish this schedule? It will become the live timetable for all users."
+                confirmText="Publish"
+                confirmButtonClass="bg-green-600 hover:bg-green-700 focus:ring-green-500"
             />
         </div>
     );

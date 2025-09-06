@@ -1,27 +1,34 @@
 // components/DepartmentManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { departmentApi } from '../services/api';
 import type { Department } from '../types';
 import { AcademicCapIcon, TrashIcon, MagnifyingGlassIcon } from './icons';
 import { SkeletonLoader } from './SkeletonLoader';
+import ConfirmationModal from './ConfirmationModal';
+import { useToast } from '../contexts/ToastContext';
 
 const DepartmentManager: React.FC = () => {
     const [departmentList, setDepartmentList] = useState<Department[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [newDepartmentName, setNewDepartmentName] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
+    const { addToast } = useToast();
 
     const loadData = useCallback(async () => {
-        setIsLoading(true);
         try {
             const departments = await departmentApi.getAll();
             setDepartmentList(departments);
+        } catch(err) {
+            addToast("Failed to load department data.", "error");
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [addToast]);
 
     useEffect(() => {
+        setIsLoading(true);
         loadData();
     }, [loadData]);
 
@@ -34,15 +41,40 @@ const DepartmentManager: React.FC = () => {
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newDepartmentName) return;
-        await departmentApi.add({ name: newDepartmentName });
+        
+        const tempId = Date.now();
+        const optimisticDepartment: Department = { id: tempId, name: newDepartmentName };
+
+        setDepartmentList(prev => [...prev, optimisticDepartment]);
         setNewDepartmentName('');
-        loadData();
+        
+        try {
+            const addedDepartment = await departmentApi.add({ name: newDepartmentName });
+            addToast("Department added!", "success");
+            setDepartmentList(prev => prev.map(d => d.id === tempId ? addedDepartment : d));
+        } catch(err: any) {
+            addToast(err.message || "Failed to add department.", "error");
+            setDepartmentList(prev => prev.filter(d => d.id !== tempId));
+        }
     };
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm('Are you sure you want to delete this department? This could affect related subjects, faculty, and students.')) {
-            await departmentApi.delete(id);
-            loadData();
+    const handleDelete = (department: Department) => {
+        setDepartmentToDelete(department);
+    };
+
+    const executeDelete = async () => {
+        if (!departmentToDelete) return;
+        
+        const originalList = [...departmentList];
+        setDepartmentList(prev => prev.filter(d => d.id !== departmentToDelete.id));
+        setDepartmentToDelete(null);
+
+        try {
+            await departmentApi.delete(departmentToDelete.id);
+            addToast("Department deleted.", "success");
+        } catch(err: any) {
+            addToast(err.message || "Failed to delete department.", "error");
+            setDepartmentList(originalList);
         }
     };
     
@@ -75,22 +107,31 @@ const DepartmentManager: React.FC = () => {
             <div className="max-h-60 overflow-y-auto pr-2">
                 {isLoading ? <SkeletonLoader /> : (
                     <ul className="space-y-2">
-                        {filteredDepartments.length > 0 ? filteredDepartments.map(department => (
-                            <li key={department.id} className="flex justify-between items-center p-2 bg-white dark:bg-slate-700/50 border dark:border-slate-200 dark:border-slate-700 rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] animate-fadeInUp">
+                        <AnimatePresence>
+                        {filteredDepartments.length > 0 ? filteredDepartments.map((department, i) => (
+                            <motion.li key={department.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2, delay: i * 0.05 }} className="flex justify-between items-center p-2 bg-white dark:bg-slate-700/50 border dark:border-slate-200 dark:border-slate-700 rounded-md">
                                 <p className="font-medium text-sm text-slate-800 dark:text-slate-200">{department.name}</p>
-                                <button onClick={() => handleDelete(department.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full">
+                                <button onClick={() => handleDelete(department)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full">
                                     <TrashIcon className="w-4 h-4" />
                                 </button>
-                            </li>
+                            </motion.li>
                         )) : (
-                            <div className="text-center py-8 animate-fadeInUp">
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
                                  <AcademicCapIcon className="w-10 h-10 mx-auto text-slate-400" />
                                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No departments found.</p>
-                            </div>
+                            </motion.div>
                         )}
+                        </AnimatePresence>
                     </ul>
                 )}
             </div>
+            <ConfirmationModal 
+                isOpen={!!departmentToDelete}
+                onClose={() => setDepartmentToDelete(null)}
+                onConfirm={executeDelete}
+                title="Delete Department"
+                message={`Are you sure you want to delete ${departmentToDelete?.name}? This could affect related subjects, faculty, and students.`}
+            />
         </div>
     );
 };

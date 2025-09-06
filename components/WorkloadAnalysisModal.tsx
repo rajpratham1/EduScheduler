@@ -4,7 +4,6 @@ import * as api from '../services/api';
 import * as geminiService from '../services/geminiService';
 import type { Student, HydratedClassSchedule } from '../types';
 import { hydrateSchedule } from '../utils/scheduleUtils';
-import { DAYS_OF_WEEK } from '../constants';
 
 interface WorkloadAnalysisModalProps {
     student: Student | null;
@@ -14,6 +13,7 @@ interface WorkloadAnalysisModalProps {
 const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, onClose }) => {
     const [schedule, setSchedule] = useState<HydratedClassSchedule[]>([]);
     const [analysis, setAnalysis] = useState<string>('');
+    const [days, setDays] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     
     useEffect(() => {
@@ -27,14 +27,18 @@ const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, 
                         enrollments,
                         subjects,
                         faculty,
-                        classrooms
+                        classrooms,
+                        daysOfWeek,
                     ] = await Promise.all([
                         api.getLatestSchedule(),
                         api.getStudentEnrollments(student.id),
                         api.getSubjects(),
                         api.getFaculty(),
-                        api.getClassrooms()
+                        api.getClassrooms(),
+                        api.getDaysOfWeek(),
                     ]);
+                    
+                    setDays(daysOfWeek);
 
                     const enrolledSubjectIds = new Set(enrollments.map(e => e.subject_id));
                     const studentScheduleData = publishedSchedule.filter(s => enrolledSubjectIds.has(s.subject_id));
@@ -71,7 +75,7 @@ const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, 
                         <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Student's Schedule</h4>
                         <div className="border dark:border-slate-700 rounded-lg p-2 space-y-2 bg-slate-50/50 dark:bg-slate-900/50">
                         {schedule.length > 0 ? (
-                           DAYS_OF_WEEK.map(day => {
+                           days.map(day => {
                                 const dayClasses = schedule.filter(s => s.day === day).sort((a,b) => parseInt(a.time.split('-')[0]) - parseInt(b.time.split('-')[0]));
                                 if (dayClasses.length === 0) return null;
                                 return (
