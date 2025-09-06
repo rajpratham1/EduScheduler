@@ -1,5 +1,6 @@
 // utils/scheduleUtils.ts
-import type { ClassSchedule, HydratedClassSchedule, Subject, Faculty, Classroom } from '../types';
+// FIX: Add file extension to import
+import type { ClassSchedule, HydratedClassSchedule, Subject, Faculty, Classroom } from '../types.ts';
 
 export const hydrateSchedule = (
     schedule: ClassSchedule[],

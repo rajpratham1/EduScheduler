@@ -1,43 +1,28 @@
 // components/ManagementDashboard.tsx
 import React from 'react';
-import SubjectManager from './SubjectManager';
-import FacultyManager from './FacultyManager';
-import StudentManager from './StudentManager';
-import ClassroomManager from './ClassroomManager';
-import DepartmentManager from './DepartmentManager';
-import ScheduleSettingsManager from './ScheduleSettingsManager';
-import AnalyticsDashboard from './AnalyticsDashboard';
+// FIX: Added file extensions to imports
+import SubjectManager from './SubjectManager.tsx';
+import ClassroomManager from './ClassroomManager.tsx';
+import DepartmentManager from './DepartmentManager.tsx';
+import ScheduleSettingsManager from './ScheduleSettingsManager.tsx';
+import FacultyManager from './FacultyManager.tsx';
+import StudentManager from './StudentManager.tsx';
+import AnalyticsDashboard from './AnalyticsDashboard.tsx';
 
 const ManagementDashboard: React.FC = () => {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-                <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
-                    <AnalyticsDashboard />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
-                        <DepartmentManager />
-                    </div>
-                    <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
-                        <ScheduleSettingsManager />
-                    </div>
-                </div>
-            </div>
-            <div className="lg:col-span-1 space-y-6">
-                <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
+        <div className="space-y-8">
+            <AnalyticsDashboard />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-8">
                     <SubjectManager />
-                </div>
-                <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
                     <ClassroomManager />
+                    <DepartmentManager />
                 </div>
-            </div>
-            <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
+                <div className="space-y-8">
                     <FacultyManager />
-                </div>
-                <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-md border dark:border-slate-700">
                     <StudentManager />
+                    <ScheduleSettingsManager />
                 </div>
             </div>
         </div>

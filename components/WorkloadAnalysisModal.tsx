@@ -1,9 +1,10 @@
 // components/WorkloadAnalysisModal.tsx
 import React, { useState, useEffect } from 'react';
-import * as api from '../services/api';
-import * as geminiService from '../services/geminiService';
-import type { Student, HydratedClassSchedule } from '../types';
-import { hydrateSchedule } from '../utils/scheduleUtils';
+// FIX: Add file extensions to imports
+import * as api from '../services/api.ts';
+import * as geminiService from '../services/geminiService.ts';
+import type { Student, HydratedClassSchedule } from '../types.ts';
+import { hydrateSchedule } from '../utils/scheduleUtils.ts';
 
 interface WorkloadAnalysisModalProps {
     student: Student | null;

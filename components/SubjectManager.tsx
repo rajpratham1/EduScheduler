@@ -1,13 +1,14 @@
 // components/SubjectManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { subjectApi } from '../services/api';
-import * as api from '../services/api';
-import type { Subject, Department } from '../types';
-import { BookOpenIcon, TrashIcon, MagnifyingGlassIcon } from './icons';
-import { SkeletonLoader } from './SkeletonLoader';
-import ConfirmationModal from './ConfirmationModal';
-import { useToast } from '../contexts/ToastContext';
+// FIX: Add file extensions to imports
+import { subjectApi } from '../services/api.ts';
+import * as api from '../services/api.ts';
+import type { Subject, Department } from '../types.ts';
+import { BookOpenIcon, TrashIcon, MagnifyingGlassIcon } from './icons.tsx';
+import { SkeletonLoader } from './SkeletonLoader.tsx';
+import ConfirmationModal from './ConfirmationModal.tsx';
+import { useToast } from '../contexts/ToastContext.tsx';
 
 const SubjectManager: React.FC = () => {
     const [subjectList, setSubjectList] = useState<Subject[]>([]);

@@ -1,90 +1,45 @@
 // backend/mockDb.ts
-import type { User, Department, Subject, Faculty, Student, Classroom, ClassSchedule, StudentEnrollment } from '../types';
+// This file contains the initial data for the mock database.
+// It's used by services/storageService.ts to populate localStorage if it's empty.
 
-interface Db {
-    users: User[];
-    departments: Department[];
-    subjects: Subject[];
-    faculty: Faculty[];
-    students: Student[];
-    classrooms: Classroom[];
-    enrollments: StudentEnrollment[];
-    daysOfWeek: string[];
-    timeSlots: string[];
-    draftSchedule: ClassSchedule[];
-    publishedSchedule: ClassSchedule[];
-}
-
-const DB_KEY = 'eduscheduler_db';
-
-const initialDb: Db = {
+export const MOCK_DB: { [key: string]: any[] } = {
     users: [
-        { id: 1, name: 'Admin User', email: 'admin@test.com', role: 'admin', avatar: 'avatar1' },
-        { id: 2, name: 'Dr. Alan Grant', email: 'faculty@test.com', role: 'faculty', avatar: 'avatar2' },
-        { id: 3, name: 'John Hammond', email: 'student@test.com', role: 'student', avatar: 'avatar3' },
-        { id: 4, name: 'New User', email: 'new@test.com', role: 'student', avatar: 'avatar4', forcePasswordChange: true },
+        { id: 1, name: 'Admin User', email: 'admin@test.com', role: 'admin', avatar: 'avatar1', forcePasswordChange: false },
+        { id: 2, name: 'Dr. Alan Grant', email: 'alan.grant@test.com', role: 'faculty', department_id: 2, avatar: 'avatar2', forcePasswordChange: false },
+        { id: 3, name: 'Dr. Ellie Sattler', email: 'ellie.sattler@test.com', role: 'faculty', department_id: 3, avatar: 'avatar3', forcePasswordChange: false },
+        { id: 4, name: 'Dr. Ian Malcolm', email: 'ian.malcolm@test.com', role: 'faculty', department_id: 1, avatar: 'avatar4', forcePasswordChange: false },
+        { id: 5, name: 'Lex Murphy', email: 'lex.murphy@test.com', role: 'student', department_id: 1, avatar: 'avatar5', forcePasswordChange: false },
+        { id: 6, name: 'Tim Murphy', email: 'tim.murphy@test.com', role: 'student', department_id: 2, avatar: 'avatar1', forcePasswordChange: false },
     ],
     departments: [
         { id: 1, name: 'Computer Science' },
-        { id: 2, name: 'Physics' },
-        { id: 3, name: 'Mathematics' },
+        { id: 2, name: 'Paleontology' },
+        { id: 3, name: 'Botany' },
     ],
     subjects: [
-        { id: 1, name: 'Intro to Programming', weekly_hours: 3, department_id: 1 },
-        { id: 2, name: 'Data Structures', weekly_hours: 4, department_id: 1 },
-        { id: 3, name: 'Classical Mechanics', weekly_hours: 3, department_id: 2 },
-        { id: 4, name: 'Calculus I', weekly_hours: 4, department_id: 3 },
-    ],
-    faculty: [
-        { id: 1, name: 'Dr. Ian Malcolm', email: 'ian@test.com', department_id: 3 },
-        { id: 2, name: 'Dr. Ellie Sattler', email: 'ellie@test.com', department_id: 1 },
-        { id: 3, name: 'Dr. Henry Wu', email: 'henry@test.com', department_id: 2 },
-    ],
-    students: [
-        { id: 1, name: 'Lex Murphy', email: 'lex@test.com', department_id: 1 },
-        { id: 2, name: 'Tim Murphy', email: 'tim@test.com', department_id: 2 },
+        { id: 1, name: 'Chaos Theory', weekly_hours: 3, department_id: 1 },
+        { id: 2, name: 'Systems Analysis', weekly_hours: 2, department_id: 1 },
+        { id: 3, name: 'Fossil Identification', weekly_hours: 4, department_id: 2 },
+        { id: 4, name: 'Paleobotany', weekly_hours: 3, department_id: 3 },
     ],
     classrooms: [
         { id: 1, name: 'Room 101', type: 'Lecture', capacity: 50 },
-        { id: 2, name: 'Lab A', type: 'Lab', capacity: 25 },
-        { id: 3, name: 'Hall C', type: 'Lecture', capacity: 100 },
-    ],
-    enrollments: [
-        { id: 1, student_id: 3, subject_id: 1 },
-        { id: 2, student_id: 3, subject_id: 4 },
-        { id: 3, student_id: 1, subject_id: 3 },
+        { id: 2, name: 'Room 102', type: 'Lecture', capacity: 50 },
+        { id: 3, name: 'Lab A', type: 'Lab', capacity: 20 },
+        { id: 4, name: 'Lab B', type: 'Lab', capacity: 20 },
     ],
     daysOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
     timeSlots: ['9-10', '10-11', '11-12', '1-2', '2-3', '3-4'],
     draftSchedule: [],
     publishedSchedule: [
-        // A minimal published schedule to start with
-        { id: 1, day: 'Monday', time: '9-10', subject_id: 1, faculty_id: 2, classroom_id: 1 },
-        { id: 2, day: 'Tuesday', time: '10-11', subject_id: 3, faculty_id: 3, classroom_id: 2 },
-        { id: 3, day: 'Wednesday', time: '1-2', subject_id: 4, faculty_id: 1, classroom_id: 3 },
+        { id: 1, day: 'Monday', time: '9-10', subject_id: 1, faculty_id: 4, classroom_id: 1 },
+        { id: 2, day: 'Monday', time: '10-11', subject_id: 3, faculty_id: 2, classroom_id: 3 },
+        { id: 3, day: 'Tuesday', time: '11-12', subject_id: 4, faculty_id: 3, classroom_id: 4 },
     ],
-};
-
-export const loadDb = (): Db => {
-    try {
-        const storedDb = localStorage.getItem(DB_KEY);
-        if (storedDb) {
-            // Basic check to see if shape is roughly correct
-            const parsed = JSON.parse(storedDb);
-            if (parsed.users && parsed.subjects) {
-                 return parsed;
-            }
-        }
-    } catch(e) {
-        console.error("Failed to load DB from localStorage", e);
-    }
-    // If anything fails, reset to initial DB
-    localStorage.setItem(DB_KEY, JSON.stringify(initialDb));
-    return initialDb;
-}
-
-export let db = loadDb();
-
-export const saveDb = () => {
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    enrollments: [
+        { id: 1, student_id: 5, subject_id: 1 },
+        { id: 2, student_id: 5, subject_id: 2 },
+        { id: 3, student_id: 6, subject_id: 3 },
+        { id: 4, student_id: 6, subject_id: 4 },
+    ],
 };

@@ -1,9 +1,10 @@
 // components/SchedulePreviewModal.tsx
 import React, { useState, useEffect } from 'react';
-import * as api from '../services/api';
-import type { PreviewUser, HydratedClassSchedule } from '../types';
-import { hydrateSchedule } from '../utils/scheduleUtils';
-import { BookOpenIcon, UserCircleIcon, BuildingOfficeIcon } from './icons';
+// FIX: Add file extensions to imports
+import * as api from '../services/api.ts';
+import type { PreviewUser, HydratedClassSchedule } from '../types.ts';
+import { hydrateSchedule } from '../utils/scheduleUtils.ts';
+import { BookOpenIcon, UserCircleIcon, BuildingOfficeIcon } from './icons.tsx';
 
 interface SchedulePreviewModalProps {
     user: PreviewUser | null;

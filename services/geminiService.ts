@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import type { Subject, Faculty, Classroom, Student, HydratedClassSchedule } from './types';
+// FIX: Add file extension to import
+import type { Subject, Faculty, Classroom, Student, HydratedClassSchedule } from '../types.ts';
 
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {

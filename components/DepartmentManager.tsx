@@ -1,12 +1,13 @@
 // components/DepartmentManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { departmentApi } from '../services/api';
-import type { Department } from '../types';
-import { AcademicCapIcon, TrashIcon, MagnifyingGlassIcon } from './icons';
-import { SkeletonLoader } from './SkeletonLoader';
-import ConfirmationModal from './ConfirmationModal';
-import { useToast } from '../contexts/ToastContext';
+// FIX: Add file extensions to imports
+import { departmentApi } from '../services/api.ts';
+import type { Department } from '../types.ts';
+import { AcademicCapIcon, TrashIcon, MagnifyingGlassIcon } from './icons.tsx';
+import { SkeletonLoader } from './SkeletonLoader.tsx';
+import ConfirmationModal from './ConfirmationModal.tsx';
+import { useToast } from '../contexts/ToastContext.tsx';
 
 const DepartmentManager: React.FC = () => {
     const [departmentList, setDepartmentList] = useState<Department[]>([]);

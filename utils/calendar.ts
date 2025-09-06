@@ -1,5 +1,7 @@
 
-import type { HydratedClassSchedule } from '../types';
+
+// FIX: Add file extension to import
+import type { HydratedClassSchedule } from '../types.ts';
 
 // Simple function to get the date of the next instance of a given weekday
 const getNextDayOfWeek = (dayName: string, daysOfWeek: string[]): Date => {

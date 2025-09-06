@@ -1,10 +1,11 @@
 // components/TimetableGrid.tsx
 import React from 'react';
 // FIX: Corrected import path
-import type { HydratedClassSchedule } from '../types';
-import { DragDropContext, Droppable, Draggable } from '../libs/react-beautiful-dnd';
-import type { DropResult } from '../libs/react-beautiful-dnd';
-import { UserCircleIcon, BuildingOfficeIcon, BookOpenIcon, ArrowPathIcon } from './icons';
+// FIX: Add file extensions to imports
+import type { HydratedClassSchedule } from '../types.ts';
+import { DragDropContext, Droppable, Draggable } from '../libs/react-beautiful-dnd.ts';
+import type { DropResult } from '../libs/react-beautiful-dnd.ts';
+import { UserCircleIcon, BuildingOfficeIcon, BookOpenIcon, ArrowPathIcon } from './icons.tsx';
 
 interface TimetableGridProps {
     schedule: HydratedClassSchedule[];

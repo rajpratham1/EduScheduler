@@ -1,10 +1,11 @@
 // components/LoginPage.tsx
 import React, { useState } from 'react';
-import * as api from '../services/api';
-import type { User } from '../types';
-import AuthLayout from './auth/AuthLayout';
-import AuthInput from './auth/AuthInput';
-import type { Page } from '../App';
+// FIX: Add file extensions to imports
+import * as api from '../services/api.ts';
+import type { User } from '../types.ts';
+import AuthLayout from './auth/AuthLayout.tsx';
+import AuthInput from './auth/AuthInput.tsx';
+import type { Page } from '../App.tsx';
 
 interface LoginPageProps {
     onLogin: (user: User) => void;

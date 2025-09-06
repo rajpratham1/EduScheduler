@@ -1,12 +1,13 @@
 // components/ClassroomManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { classroomApi } from '../services/api';
-import type { Classroom } from '../types';
-import { BuildingOfficeIcon, TrashIcon, MagnifyingGlassIcon } from './icons';
-import { SkeletonLoader } from './SkeletonLoader';
-import ConfirmationModal from './ConfirmationModal';
-import { useToast } from '../contexts/ToastContext';
+// FIX: Add file extensions to imports
+import { classroomApi } from '../services/api.ts';
+import type { Classroom } from '../types.ts';
+import { BuildingOfficeIcon, TrashIcon, MagnifyingGlassIcon } from './icons.tsx';
+import { SkeletonLoader } from './SkeletonLoader.tsx';
+import ConfirmationModal from './ConfirmationModal.tsx';
+import { useToast } from '../contexts/ToastContext.tsx';
 
 const ClassroomManager: React.FC = () => {
     const [classroomList, setClassroomList] = useState<Classroom[]>([]);
@@ -77,17 +78,16 @@ const ClassroomManager: React.FC = () => {
 
         const originalList = [...classroomList];
         setClassroomList(prev => prev.filter(c => c.id !== classroomToDelete.id));
-        // FIX: Corrected typo from setCommunityToDelete to setClassroomToDelete
+        const classroomToDeleteId = classroomToDelete.id;
         setClassroomToDelete(null);
 
         try {
-            await classroomApi.delete(classroomToDelete.id);
+            await classroomApi.delete(classroomToDeleteId);
             addToast("Classroom deleted.", "success");
         } catch(err: any) {
             addToast(err.message || "Failed to delete classroom.", "error");
             setClassroomList(originalList);
         }
-        setClassroomToDelete(null);
     };
     
     return (

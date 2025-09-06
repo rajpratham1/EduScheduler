@@ -3,12 +3,12 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // Load environment variables based on the current mode (e.g., 'development', 'production')
   const env = loadEnv(mode, process.cwd(), '');
-
   return {
     plugins: [react()],
-    // The `define` object is not needed if you're just accessing env variables.
-    // They are automatically available on `import.meta.env`.
+    define: {
+      'process.env.API_KEY': JSON.stringify(env.VITE_API_KEY),
+      'import.meta.env.VITE_XANO_API_URL': JSON.stringify(env.VITE_XANO_API_URL),
+    }
   }
 })

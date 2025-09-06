@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 // FIX: Correct import for icons
-import { MagicWandIcon } from './icons';
+// FIX: Add file extension to import
+import { MagicWandIcon } from './icons.tsx';
 
 const loadingMessages = [
   "Initializing AI scheduling engine...",

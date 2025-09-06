@@ -1,9 +1,10 @@
 // components/SignUpPage.tsx
 import React, { useState } from 'react';
-import * as api from '../services/api';
-import AuthLayout from './auth/AuthLayout';
-import AuthInput from './auth/AuthInput';
-import type { Page } from '../App';
+// FIX: Add file extension to import
+import * as api from '../services/api.ts';
+import AuthLayout from './auth/AuthLayout.tsx';
+import AuthInput from './auth/AuthInput.tsx';
+import type { Page } from '../App.tsx';
 
 interface SignUpPageProps {
     onSignUpSuccess: () => void;

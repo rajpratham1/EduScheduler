@@ -1,20 +1,21 @@
 // components/GeneratorView.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 // FIX: Corrected import path
-import * as api from '../services/api';
+// FIX: Add file extensions to imports
+import * as api from '../services/api.ts';
 // FIX: Corrected import path
-import * as geminiService from '../services/geminiService';
-import { hydrateSchedule, dehydrateSchedule } from '../utils/scheduleUtils';
-import { detectConflicts } from '../utils/conflictDetector';
-import TimetableGrid from './TimetableGrid';
-import { Loader } from './Loader';
-import ConflictReport from './ConflictReport';
-import ReplacementFinderModal from './ReplacementFinderModal';
-import ConfirmationModal from './ConfirmationModal';
-import { useToast } from '../contexts/ToastContext';
+import * as geminiService from '../services/geminiService.ts';
+import { hydrateSchedule, dehydrateSchedule } from '../utils/scheduleUtils.ts';
+import { detectConflicts } from '../utils/conflictDetector.ts';
+import TimetableGrid from './TimetableGrid.tsx';
+import { Loader } from './Loader.tsx';
+import ConflictReport from './ConflictReport.tsx';
+import ReplacementFinderModal from './ReplacementFinderModal.tsx';
+import ConfirmationModal from './ConfirmationModal.tsx';
+import { useToast } from '../contexts/ToastContext.tsx';
 // FIX: Corrected import path
-import type { Subject, Faculty, Classroom, HydratedClassSchedule, Conflict } from '../types';
-import type { DropResult } from '../libs/react-beautiful-dnd';
+import type { Subject, Faculty, Classroom, HydratedClassSchedule, Conflict } from '../types.ts';
+import type { DropResult } from '../libs/react-beautiful-dnd.ts';
 
 const GeneratorView: React.FC = () => {
     const [subjects, setSubjects] = useState<Subject[]>([]);

@@ -6,7 +6,16 @@ export interface User {
   email: string;
   role: 'admin' | 'faculty' | 'student';
   avatar: string;
-  forcePasswordChange?: boolean;
+  mobile_number?: string;
+  forcePasswordChange: boolean;
+}
+
+export interface Student extends User {
+    department_id: number;
+}
+
+export interface Faculty extends User {
+    department_id: number;
 }
 
 export interface Department {
@@ -21,30 +30,15 @@ export interface Subject {
     department_id: number;
 }
 
-export interface Faculty {
-    id: number;
-    name: string;
-    email: string;
-    department_id: number;
-}
-
-export interface Student {
-    id: number;
-    name: string;
-    email: string;
-    department_id: number;
-}
-
 export interface Classroom {
     id: number;
     name: string;
-    type: 'Lecture' | 'Lab' | 'Seminar' | string;
+    type: string; // 'Lecture', 'Lab', 'Seminar'
     capacity: number;
 }
 
-// Basic schedule entry from the database or AI generation
 export interface ClassSchedule {
-    id?: number; // Optional because new schedules might not have an ID yet
+    id: number; // Unique ID for a schedule entry instance
     day: string;
     time: string;
     subject_id: number;
@@ -52,9 +46,8 @@ export interface ClassSchedule {
     classroom_id: number;
 }
 
-// Enriched schedule entry with names for UI display
 export interface HydratedClassSchedule extends ClassSchedule {
-    instance_id: string; // Unique ID for React components (e.g., drag and drop)
+    instance_id: string; // Unique ID for DnD
     subject: string;
     faculty: string;
     classroom: string;
@@ -66,15 +59,14 @@ export interface Conflict {
     severity: 'error' | 'warning';
 }
 
-export interface StudentEnrollment {
-    id: number;
-    student_id: number;
-    subject_id: number;
-}
-
-// A simplified user object for the preview modal
 export interface PreviewUser {
     id: number;
     name: string;
-    role: 'student' | 'faculty';
+    role: 'faculty' | 'student';
+}
+
+export interface Enrollment {
+    id: number;
+    student_id: number;
+    subject_id: number;
 }

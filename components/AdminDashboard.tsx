@@ -1,7 +1,8 @@
 // components/AdminDashboard.tsx
 import React, { useState } from 'react';
-import GeneratorView from './GeneratorView';
-import ManagementDashboard from './ManagementDashboard';
+import GeneratorView from './GeneratorView.tsx';
+// FIX: Add file extension to import
+import ManagementDashboard from './ManagementDashboard.tsx';
 
 type Tab = 'generator' | 'management';
 

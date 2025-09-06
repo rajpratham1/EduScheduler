@@ -1,21 +1,18 @@
 
+
 import React, { useState, useEffect } from 'react';
-import LoginPage from './components/LoginPage';
-import SignUpPage from './components/SignUpPage';
-import ForgotPasswordPage from './components/ForgotPasswordPage';
-import ForcePasswordChangePage from './components/ForcePasswordChangePage';
-import AdminDashboard from './components/AdminDashboard';
-// FIX: Corrected import path
-import FacultyDashboard from './components/FacultyDashboard';
-// FIX: Corrected import path
-import StudentDashboard from './components/StudentDashboard';
-// FIX: Corrected import path
-import { Header } from './components/Header';
-// FIX: Corrected import path
-import * as api from './services/api';
-// FIX: Corrected import path
-import type { User } from './types';
-import { ToastProvider } from './contexts/ToastContext';
+import LoginPage from './components/LoginPage.tsx';
+import SignUpPage from './components/SignUpPage.tsx';
+import ForgotPasswordPage from './components/ForgotPasswordPage.tsx';
+import ForcePasswordChangePage from './components/ForcePasswordChangePage.tsx';
+import AdminDashboard from './components/AdminDashboard.tsx';
+// FIX: Add file extensions to imports
+import FacultyDashboard from './components/FacultyDashboard.tsx';
+import StudentDashboard from './components/StudentDashboard.tsx';
+import { Header } from './components/Header.tsx';
+import * as api from './services/api.ts';
+import type { User } from './types.ts';
+import { ToastProvider } from './contexts/ToastContext.tsx';
 
 type Theme = 'light' | 'dark';
 export type Page = 'login' | 'signup' | 'forgotPassword' | 'dashboard' | 'forcePasswordChange';

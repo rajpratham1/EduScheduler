@@ -1,7 +1,8 @@
 // components/ConflictReport.tsx
 import React from 'react';
-import type { Conflict } from '../types';
-import { ExclamationTriangleIcon, CheckCircleIcon } from './icons';
+// FIX: Add file extensions to imports
+import type { Conflict } from '../types.ts';
+import { ExclamationTriangleIcon, CheckCircleIcon } from './icons.tsx';
 
 interface ConflictReportProps {
     conflicts: Conflict[];

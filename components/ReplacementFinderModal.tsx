@@ -1,7 +1,8 @@
 // components/ReplacementFinderModal.tsx
 import React, { useState, useEffect } from 'react';
-import * as api from '../services/api';
-import type { Faculty, HydratedClassSchedule } from '../types';
+// FIX: Add file extensions to imports
+import * as api from '../services/api.ts';
+import type { Faculty, HydratedClassSchedule } from '../types.ts';
 
 interface ReplacementFinderModalProps {
     classInfo: HydratedClassSchedule | null;
