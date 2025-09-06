@@ -1,13 +1,13 @@
 // components/ReplacementFinderModal.tsx
 import React, { useState, useEffect } from 'react';
-// FIX: Add file extensions to imports
 import * as api from '../services/api.ts';
 import type { Faculty, HydratedClassSchedule } from '../types.ts';
 
 interface ReplacementFinderModalProps {
     classInfo: HydratedClassSchedule | null;
     onClose: () => void;
-    onSelect: (newFacultyId: number) => void;
+    // FIX: Changed newFacultyId type from number to string to match Faculty ID type.
+    onSelect: (newFacultyId: string) => void;
 }
 
 const ReplacementFinderModal: React.FC<ReplacementFinderModalProps> = ({ classInfo, onClose, onSelect }) => {

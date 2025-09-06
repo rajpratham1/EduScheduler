@@ -37,7 +37,8 @@ const ForcePasswordChangePage: React.FC<ForcePasswordChangePageProps> = ({ user,
             // In a real production system, this would be handled via a secure, one-time token flow.
             const tempPassword = user.name.toLowerCase().replace(/\s/g, '') + '123';
 
-            await api.changePassword(user.id, tempPassword, newPassword);
+            // FIX: Updated the api.changePassword call to match the new function signature.
+            await api.changePassword(tempPassword, newPassword);
             
             addToast("Password updated successfully!", 'success');
             onPasswordChanged();

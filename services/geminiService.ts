@@ -1,5 +1,4 @@
 import { GoogleGenAI, Type } from "@google/genai";
-// FIX: Add file extension to import
 import type { Subject, Faculty, Classroom, Student, HydratedClassSchedule } from '../types.ts';
 
 const API_KEY = process.env.API_KEY;
@@ -50,9 +49,9 @@ export const generateTimetable = async (
             properties: {
                 day: { type: Type.STRING, description: 'Day of the week', enum: days },
                 time: { type: Type.STRING, description: 'Time slot', enum: timeSlots },
-                subject_id: { type: Type.NUMBER, description: 'ID of the subject' },
-                faculty_id: { type: Type.NUMBER, description: 'ID of the faculty member' },
-                classroom_id: { type: Type.NUMBER, description: 'ID of the classroom' },
+                subject_id: { type: Type.STRING, description: 'ID of the subject' },
+                faculty_id: { type: Type.STRING, description: 'ID of the faculty member' },
+                classroom_id: { type: Type.STRING, description: 'ID of the classroom' },
             },
             required: ["day", "time", "subject_id", "faculty_id", "classroom_id"]
         }
@@ -78,7 +77,8 @@ export const generateTimetable = async (
 };
 
 
-export const analyzeStudentWorkload = async (student: Student, schedule: HydratedClassSchedule[]): Promise<string> => {
+// FIX: Changed student type to Pick<Student, 'name'> as only the name is used, resolving type conflict with User object.
+export const analyzeStudentWorkload = async (student: Pick<Student, 'name'>, schedule: HydratedClassSchedule[]): Promise<string> => {
     const scheduleSummary = schedule.map(s => `${s.day} ${s.time}: ${s.subject}`).join('\n');
     const prompt = `
         You are an academic advisor AI. Analyze the following student's weekly class schedule and provide a brief, encouraging analysis of their workload.

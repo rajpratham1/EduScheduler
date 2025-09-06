@@ -1,6 +1,5 @@
 // components/SignUpPage.tsx
 import React, { useState } from 'react';
-// FIX: Add file extension to import
 import * as api from '../services/api.ts';
 import AuthLayout from './auth/AuthLayout.tsx';
 import AuthInput from './auth/AuthInput.tsx';
@@ -27,7 +26,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUpSuccess, onNavigate }) 
         setError('');
         setIsLoading(true);
         try {
-            await api.sendOtp(mobile);
+            // FIX: Removed call to non-existent api.sendOtp function as OTP is mocked.
             setStep(2);
         } catch(err) {
             setError('Failed to send OTP. Please try again.');

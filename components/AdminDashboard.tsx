@@ -1,7 +1,6 @@
 // components/AdminDashboard.tsx
 import React, { useState } from 'react';
 import GeneratorView from './GeneratorView.tsx';
-// FIX: Add file extension to import
 import ManagementDashboard from './ManagementDashboard.tsx';
 import AnalyticsDashboard from './AnalyticsDashboard.tsx';
 import SavedTimetablesList from './SavedTimetablesList.tsx';

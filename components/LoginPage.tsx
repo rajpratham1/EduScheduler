@@ -1,8 +1,6 @@
 // components/LoginPage.tsx
 import React, { useState } from 'react';
-// FIX: Add file extensions to imports
 import * as api from '../services/api.ts';
-// FIX: Add file extensions to imports
 import type { User } from '../types.ts';
 import AuthLayout from './auth/AuthLayout.tsx';
 import AuthInput from './auth/AuthInput.tsx';

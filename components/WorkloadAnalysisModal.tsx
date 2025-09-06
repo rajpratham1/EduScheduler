@@ -1,6 +1,5 @@
 // components/WorkloadAnalysisModal.tsx
 import React, { useState, useEffect } from 'react';
-// FIX: Add file extensions to imports
 import * as api from '../services/api.ts';
 import * as geminiService from '../services/geminiService.ts';
 import type { Student, HydratedClassSchedule } from '../types.ts';
@@ -8,7 +7,6 @@ import { hydrateSchedule } from '../utils/scheduleUtils.ts';
 
 interface WorkloadAnalysisModalProps {
     student: Student | null;
-    // FIX: Add missing 'isOpen' prop to control modal visibility.
     isOpen: boolean;
     onClose: () => void;
 }
@@ -20,7 +18,6 @@ const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, 
     const [isLoading, setIsLoading] = useState(false);
     
     useEffect(() => {
-        // FIX: Only fetch and analyze data when the modal is open and a student is provided.
         if (student && isOpen) {
             const fetchAndAnalyze = async () => {
                 setIsLoading(true);
@@ -44,7 +41,8 @@ const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, 
                     
                     setDays(daysOfWeek);
 
-                    const enrolledSubjectIds = new Set(enrollments.map(e => e.subject_id));
+                    // FIX: The `enrollments` array is an array of strings (subject IDs), not objects.
+                    const enrolledSubjectIds = new Set(enrollments);
                     const studentScheduleData = publishedSchedule.filter(s => enrolledSubjectIds.has(s.subject_id));
                     const hydrated = hydrateSchedule(studentScheduleData, subjects, faculty, classrooms);
                     setSchedule(hydrated);
@@ -66,7 +64,6 @@ const WorkloadAnalysisModal: React.FC<WorkloadAnalysisModalProps> = ({ student, 
         }
     }, [student, isOpen]);
 
-    // FIX: Render nothing if the modal is not open or if there's no student.
     if (!isOpen || !student) return null;
 
     return (

@@ -1,5 +1,4 @@
 // utils/scheduleUtils.ts
-// FIX: Add file extension to import
 import type { ClassSchedule, HydratedClassSchedule, Subject, Faculty, Classroom } from '../types.ts';
 
 export const hydrateSchedule = (
@@ -14,7 +13,8 @@ export const hydrateSchedule = (
 
     return schedule.map((entry, index) => ({
         ...entry,
-        instance_id: `class-${entry.id || index}-${entry.subject_id}-${entry.faculty_id}`, // More robust unique ID for dnd
+        // FIX: The `ClassSchedule` type does not have an `id`. Use index for a unique key.
+        instance_id: `class-${index}-${entry.subject_id}-${entry.faculty_id}`, // More robust unique ID for dnd
         subject: subjectsMap.get(entry.subject_id) || 'Unknown Subject',
         faculty: facultyMap.get(entry.faculty_id) || 'Unknown Faculty',
         classroom: classroomsMap.get(entry.classroom_id) || 'Unknown Classroom',
@@ -23,7 +23,8 @@ export const hydrateSchedule = (
 
 export const dehydrateSchedule = (schedule: HydratedClassSchedule[]): Omit<ClassSchedule, 'id'>[] => {
     // This function strips the hydrated names, leaving only the essential data for saving.
-    return schedule.map(({ subject, faculty, classroom, instance_id, id, ...rest }) => rest);
+    // FIX: The `HydratedClassSchedule` type does not have an `id`. Removed from destructuring.
+    return schedule.map(({ subject, faculty, classroom, instance_id, ...rest }) => rest);
 };
 
 export const getUniqueTimeSlots = (schedule: ClassSchedule[]): string[] => {

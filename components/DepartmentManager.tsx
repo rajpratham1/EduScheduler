@@ -1,7 +1,6 @@
 // components/DepartmentManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// FIX: Add file extensions to imports
 import { departmentApi } from '../services/api.ts';
 import type { Department } from '../types.ts';
 import { AcademicCapIcon, TrashIcon, MagnifyingGlassIcon } from './icons.tsx';
@@ -43,7 +42,8 @@ const DepartmentManager: React.FC = () => {
         e.preventDefault();
         if (!newDepartmentName) return;
         
-        const tempId = Date.now();
+        // FIX: Changed tempId to a string to match the Department type.
+        const tempId = Date.now().toString();
         const optimisticDepartment: Department = { id: tempId, name: newDepartmentName };
 
         setDepartmentList(prev => [...prev, optimisticDepartment]);
@@ -52,9 +52,11 @@ const DepartmentManager: React.FC = () => {
         try {
             const addedDepartment = await departmentApi.add({ name: newDepartmentName });
             addToast("Department added!", "success");
+            // FIX: Compare string IDs for optimistic update replacement.
             setDepartmentList(prev => prev.map(d => d.id === tempId ? addedDepartment : d));
         } catch(err: any) {
             addToast(err.message || "Failed to add department.", "error");
+            // FIX: Compare string IDs for optimistic update removal on failure.
             setDepartmentList(prev => prev.filter(d => d.id !== tempId));
         }
     };

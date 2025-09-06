@@ -1,8 +1,6 @@
 // components/SubjectManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// FIX: Add file extensions to imports
-import { subjectApi } from '../services/api.ts';
 import * as api from '../services/api.ts';
 import type { Subject, Department } from '../types.ts';
 import { BookOpenIcon, TrashIcon, MagnifyingGlassIcon } from './icons.tsx';
@@ -16,7 +14,8 @@ const SubjectManager: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [newSubjectName, setNewSubjectName] = useState('');
     const [newSubjectHours, setNewSubjectHours] = useState<number | string>(3);
-    const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | string>('');
+    // FIX: Changed selectedDepartmentId state to be a string.
+    const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
     const [searchTerm, setSearchTerm] = useState('');
     const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
     const { addToast } = useToast();
@@ -24,7 +23,7 @@ const SubjectManager: React.FC = () => {
     const loadData = useCallback(async () => {
         try {
             const [subjects, depts] = await Promise.all([
-                subjectApi.getAll(),
+                api.subjectApi.getAll(),
                 api.getDepartments(),
             ]);
             setSubjectList(subjects);
@@ -54,13 +53,15 @@ const SubjectManager: React.FC = () => {
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newSubjectName || !newSubjectHours || !selectedDepartmentId) return;
-
-        const tempId = Date.now();
+        
+        // FIX: Changed tempId to a string to match the Subject type.
+        const tempId = Date.now().toString();
         const optimisticSubject: Subject = {
             id: tempId,
             name: newSubjectName,
             weekly_hours: Number(newSubjectHours),
-            department_id: Number(selectedDepartmentId)
+            // FIX: Use string value of selectedDepartmentId directly.
+            department_id: selectedDepartmentId
         };
 
         setSubjectList(prev => [...prev, optimisticSubject]);
@@ -69,11 +70,13 @@ const SubjectManager: React.FC = () => {
 
         try {
             const { id, ...newSubjectData } = optimisticSubject;
-            const addedSubject = await subjectApi.add(newSubjectData as Omit<Subject, 'id'>);
+            const addedSubject = await api.subjectApi.add(newSubjectData as Omit<Subject, 'id'>);
             addToast("Subject added!", "success");
+            // FIX: Compare string IDs for optimistic update replacement.
             setSubjectList(prev => prev.map(s => s.id === tempId ? addedSubject : s));
         } catch(err: any) {
             addToast(err.message || "Failed to add subject.", "error");
+            // FIX: Compare string IDs for optimistic update removal on failure.
             setSubjectList(prev => prev.filter(s => s.id !== tempId));
         }
     };
@@ -90,7 +93,7 @@ const SubjectManager: React.FC = () => {
         setSubjectToDelete(null);
 
         try {
-            await subjectApi.delete(subjectToDelete.id);
+            await api.subjectApi.delete(subjectToDelete.id);
             addToast("Subject deleted.", "success");
         } catch(err: any) {
             addToast(err.message || "Failed to delete subject.", "error");
@@ -116,7 +119,8 @@ const SubjectManager: React.FC = () => {
                 </div>
                 <div>
                     <label htmlFor="subjectDept" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
-                    <select id="subjectDept" value={selectedDepartmentId} onChange={e => setSelectedDepartmentId(Number(e.target.value))} className="mt-1 block w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md shadow-sm text-sm dark:text-slate-200" required>
+                    {/* FIX: Removed Number() conversion from onChange handler. */}
+                    <select id="subjectDept" value={selectedDepartmentId} onChange={e => setSelectedDepartmentId(e.target.value)} className="mt-1 block w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md shadow-sm text-sm dark:text-slate-200" required>
                         {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                     </select>
                 </div>

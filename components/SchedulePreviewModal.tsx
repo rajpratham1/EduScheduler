@@ -1,6 +1,5 @@
 // components/SchedulePreviewModal.tsx
 import React, { useState, useEffect } from 'react';
-// FIX: Add file extensions to imports
 import * as api from '../services/api.ts';
 import type { PreviewUser, HydratedClassSchedule } from '../types.ts';
 import { hydrateSchedule } from '../utils/scheduleUtils.ts';
@@ -44,7 +43,8 @@ const SchedulePreviewModal: React.FC<SchedulePreviewModalProps> = ({ user, onClo
                     if (user.role === 'faculty') {
                         userScheduleData = publishedSchedule.filter(s => s.faculty_id === user.id);
                     } else { // student
-                        const enrolledSubjectIds = new Set(enrollments.map(e => e.subject_id));
+                        // FIX: enrollments is a string array of subject IDs, not objects.
+                        const enrolledSubjectIds = new Set(enrollments);
                         userScheduleData = publishedSchedule.filter(s => enrolledSubjectIds.has(s.subject_id));
                     }
 

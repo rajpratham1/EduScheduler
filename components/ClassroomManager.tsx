@@ -1,7 +1,6 @@
 // components/ClassroomManager.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// FIX: Add file extensions to imports
 import { classroomApi } from '../services/api.ts';
 import type { Classroom } from '../types.ts';
 import { BuildingOfficeIcon, TrashIcon, MagnifyingGlassIcon } from './icons.tsx';
@@ -45,7 +44,8 @@ const ClassroomManager: React.FC = () => {
         e.preventDefault();
         if (!newClassroomName || !newClassroomType || !newClassroomCapacity) return;
 
-        const tempId = Date.now();
+        // FIX: Changed tempId to a string to match the Classroom type.
+        const tempId = Date.now().toString();
         const optimisticClassroom: Classroom = {
             id: tempId,
             name: newClassroomName,
@@ -62,9 +62,11 @@ const ClassroomManager: React.FC = () => {
             const { id, ...newClassroomData } = optimisticClassroom;
             const addedClassroom = await classroomApi.add(newClassroomData as Omit<Classroom, 'id'>);
             addToast("Classroom added!", "success");
+            // FIX: Compare string IDs for optimistic update replacement.
             setClassroomList(prev => prev.map(c => c.id === tempId ? addedClassroom : c));
         } catch(err: any) {
             addToast(err.message || "Failed to add classroom.", "error");
+            // FIX: Compare string IDs for optimistic update removal on failure.
             setClassroomList(prev => prev.filter(c => c.id !== tempId));
         }
     };

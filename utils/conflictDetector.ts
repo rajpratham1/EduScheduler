@@ -1,5 +1,4 @@
 // utils/conflictDetector.ts
-// FIX: Add file extension to import
 import type { HydratedClassSchedule, Conflict, Subject } from '../types.ts';
 
 export const detectConflicts = (

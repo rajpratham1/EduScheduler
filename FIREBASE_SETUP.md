@@ -1,0 +1,1 @@
+full contents of FIREBASE_SETUP.md

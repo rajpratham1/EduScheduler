@@ -43,7 +43,7 @@ const ScheduleSettingsManager: React.FC = () => {
             await api.addDayOfWeek(newDay);
             setNewDay('');
             addToast("Day added!", "success");
-            loadData();
+            await loadData();
         } catch(err: any) {
             addToast(err.message || "Failed to add day.", "error");
         }
@@ -54,7 +54,7 @@ const ScheduleSettingsManager: React.FC = () => {
         try {
             await api.removeDayOfWeek(dayToDelete);
             addToast("Day removed.", "success");
-            loadData();
+            await loadData();
         } catch(err: any) {
             addToast(err.message || "Failed to remove day.", "error");
         }
@@ -71,7 +71,7 @@ const ScheduleSettingsManager: React.FC = () => {
             await api.addTimeSlot(newTime);
             setNewTime('');
             addToast("Time slot added!", "success");
-            loadData();
+            await loadData();
         } catch(err: any) {
             addToast(err.message || "Failed to add time slot.", "error");
         }
@@ -82,7 +82,7 @@ const ScheduleSettingsManager: React.FC = () => {
         try {
             await api.removeTimeSlot(timeToDelete);
             addToast("Time slot removed.", "success");
-            loadData();
+            await loadData();
         } catch(err: any) {
             addToast(err.message || "Failed to remove time slot.", "error");
         }

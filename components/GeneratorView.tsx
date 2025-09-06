@@ -1,8 +1,6 @@
 // components/GeneratorView.tsx
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-// FIX: Add file extensions to imports
+import React, { useState, useEffect, useCallback } from 'react';
 import * as api from '../services/api.ts';
-// FIX: Corrected import path
 import * as geminiService from '../services/geminiService.ts';
 import { hydrateSchedule, dehydrateSchedule } from '../utils/scheduleUtils.ts';
 import { detectConflicts } from '../utils/conflictDetector.ts';
@@ -12,7 +10,6 @@ import ConflictReport from './ConflictReport.tsx';
 import ReplacementFinderModal from './ReplacementFinderModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
 import { useToast } from '../contexts/ToastContext.tsx';
-// FIX: Add file extensions to imports
 import type { Subject, Faculty, Classroom, HydratedClassSchedule, Conflict } from '../types.ts';
 import type { DropResult } from '../libs/react-beautiful-dnd.ts';
 
@@ -26,7 +23,7 @@ const GeneratorView: React.FC = () => {
     
     const [isLoading, setIsLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [constraints, setConstraints] = useState('- Mr. Smith is unavailable on Fridays.\n- Physics I must be in a Lab.');
+    const [constraints, setConstraints] = useState('- Dr. Marie Curie is unavailable on Fridays.\n- Quantum Physics must be in a Lab.');
     const [conflicts, setConflicts] = useState<Conflict[]>([]);
     const [classToReplace, setClassToReplace] = useState<HydratedClassSchedule | null>(null);
     const [isConfirmingPublish, setIsConfirmingPublish] = useState(false);
@@ -151,7 +148,8 @@ const GeneratorView: React.FC = () => {
         setClassToReplace(classInfo);
     };
 
-    const handleSelectReplacement = (newFacultyId: number) => {
+    // FIX: Changed newFacultyId type from number to string to match Faculty ID type.
+    const handleSelectReplacement = (newFacultyId: string) => {
         if (classToReplace) {
              setHydratedSchedule(prev => {
                 const newSchedule = [...prev];

@@ -1,78 +1,65 @@
 // types.ts
-
-export type Role = 'admin' | 'faculty' | 'student';
-export type Page = 'login' | 'signup' | 'forgotPassword' | 'forcePasswordChange' | 'dashboard';
-
 export interface User {
-    id: number;
+    id: string; // Firestore document ID
+    uid: string; // Firebase Auth UID
     name: string;
     email: string;
+    role: 'admin' | 'faculty' | 'student';
+    avatar: string;
+    force_password_change: boolean;
     mobile_number: string;
-    role: Role;
-    avatar: string; // key for AVATARS map
-    force_password_change?: boolean;
 }
 
-// For schedule preview, we only need a subset of user info
-export interface PreviewUser {
-    id: number;
-    name: string;
-    role: 'faculty' | 'student';
-}
-
-export interface Department {
-    id: number;
+export interface BaseEntity {
+    id: string;
     name: string;
 }
 
-export interface Subject {
-    id: number;
-    name: string;
+export interface Department extends BaseEntity {}
+
+export interface Subject extends BaseEntity {
     weekly_hours: number;
-    department_id: number;
+    department_id: string;
 }
 
-export interface Faculty {
-    id: number;
-    name: string;
-    department_id: number;
+export interface Faculty extends BaseEntity {
+    email: string;
+    mobile_number: string;
+    department_id: string;
 }
 
-export interface Student {
-    id: number;
-    name: string;
-    department_id: number;
+export interface Student extends BaseEntity {
+    email: string;
+    mobile_number: string;
+    department_id: string;
+    enrolled_subjects: string[]; // array of subject IDs
 }
 
-export interface Classroom {
-    id: number;
-    name: string;
+export interface Classroom extends BaseEntity {
     type: 'Lecture' | 'Lab' | 'Seminar';
     capacity: number;
 }
 
-export interface Enrollment {
-    id: number;
-    student_id: number;
-    subject_id: number;
-}
-
-// The raw schedule data stored in the DB
 export interface ClassSchedule {
-    id?: number; // Optional as it might not exist before saving
+    // No 'id' as it's part of an array in a single document
     day: string;
     time: string;
-    subject_id: number;
-    faculty_id: number;
-    classroom_id: number;
+    subject_id: string;
+    faculty_id: string;
+    classroom_id: string;
 }
 
-// The schedule data enriched with names for display
 export interface HydratedClassSchedule extends ClassSchedule {
-    instance_id: string; // A unique ID for React keys and dnd
+    instance_id: string; // Unique ID for React keys and dnd
     subject: string;
     faculty: string;
     classroom: string;
+}
+
+export interface Enrollment {
+    id: string;
+    student_id: string;
+    subject_id: string;
 }
 
 export interface Conflict {
@@ -81,18 +68,8 @@ export interface Conflict {
     severity: 'error' | 'warning';
 }
 
-export interface MockDb {
-    users: User[];
-    departments: Department[];
-    subjects: Subject[];
-    faculty: Faculty[];
-    students: Student[];
-    classrooms: Classroom[];
-    enrollments: Enrollment[];
-    schedules: {
-        draft: ClassSchedule[];
-        published: ClassSchedule[];
-    };
-    days_of_week: string[];
-    time_slots: string[];
+export interface PreviewUser {
+    id: string;
+    name: string;
+    role: 'student' | 'faculty';
 }
