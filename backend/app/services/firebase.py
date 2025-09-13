@@ -13,6 +13,8 @@ def initialize_firebase():
 
     # Read the service account JSON content from environment variable
     try:
+        print(f"DEBUG: FIREBASE_PRIVATE_KEY_CONTENT type: {type(settings.FIREBASE_PRIVATE_KEY_CONTENT)}")
+        print(f"DEBUG: FIREBASE_PRIVATE_KEY_CONTENT first 50 chars: {str(settings.FIREBASE_PRIVATE_KEY_CONTENT)[:50]}...")
         service_account_info = json.loads(settings.FIREBASE_PRIVATE_KEY_CONTENT)
     except json.JSONDecodeError as e:
         print(f"Error: Could not decode Firebase private key JSON from environment variable: {e}")
