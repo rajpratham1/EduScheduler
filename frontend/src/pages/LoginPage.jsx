@@ -25,7 +25,7 @@ function LoginPage() {
       const idToken = await result.user.getIdToken();
       
       // Send the token to your backend
-      const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login/google', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/auth/login/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

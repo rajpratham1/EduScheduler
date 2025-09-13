@@ -23,7 +23,7 @@ function ProfilePage() {
     const fetchUserProfile = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch('http://127.0.0.1:8000/api/v1/users/me', {
+        const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me', {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) throw new Error('Failed to fetch user profile');
@@ -52,7 +52,7 @@ function ProfilePage() {
     const token = localStorage.getItem('accessToken');
     const updatedData = { display_name: displayName, department, batch, student_id: studentId, faculty_id: facultyId };
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/me', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ function ProfilePage() {
     formData.append('file', photo);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/me/photo', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me/photo', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -109,7 +109,7 @@ function ProfilePage() {
     const token = localStorage.getItem('accessToken');
     const slotsArray = unavailableSlots.split(',').map(s => s.trim()).filter(s => s);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/me/availability', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me/availability', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
