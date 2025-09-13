@@ -5,8 +5,18 @@ from pydantic import BaseModel
 
 from app.core.config import settings
 from app.schemas.auth import TokenData
+from app.services.firebase import db
+from firebase_admin import firestore
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/google")
+
+def get_db() -> firestore.Client:
+    if db is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Database session not initialized"
+        )
+    return db
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(

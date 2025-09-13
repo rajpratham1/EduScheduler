@@ -5,13 +5,13 @@ from datetime import datetime, timedelta
 
 from app.schemas.auth import Token, GoogleLoginRequest, TokenData
 from app.core.config import settings
-from firebase_admin import auth
+from firebase_admin import auth, firestore
+from app.core.dependencies import get_db
 
 router = APIRouter()
 
 @router.post("/login/google", response_model=Token)
-async def login_google(request: GoogleLoginRequest):
-    from app.services.firebase import db
+async def login_google(request: GoogleLoginRequest, db: firestore.Client = Depends(get_db)):
     try:
         decoded_token = auth.verify_id_token(request.token)
         email = decoded_token.get("email")
@@ -48,7 +48,5 @@ async def login_google(request: GoogleLoginRequest):
     except auth.InvalidIdTokenError as e:
         raise HTTPException(status_code=401, detail=f"Invalid Firebase ID token: {e}")
     except Exception as e:
-        print(f"!!! UNEXPECTED ERROR IN GOOGLE LOGIN: {e}")
-        import traceback
-        traceback.print_exc()
+        # The get_db dependency will handle the 500 error if db is None
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
