@@ -2,21 +2,23 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
+import firebase_admin
+from firebase_admin import firestore
 
 from app.core.config import settings
 from app.schemas.auth import TokenData
-from app.services.firebase import db
-from firebase_admin import firestore
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/google")
 
 def get_db() -> firestore.Client:
-    if db is None:
+    try:
+        default_app = firebase_admin.get_app()
+    except ValueError:
         raise HTTPException(
             status_code=500,
-            detail="Database session not initialized"
+            detail="Firebase app not initialized."
         )
-    return db
+    return firestore.client(app=default_app)
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
