@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from 'src/contexts/AuthContext';
+import { useAuth } from 'src/contexts/AuthContext.jsx';
 import Modal from 'src/components/Modal';
 import './ElectivesPage.css'; // Import the CSS file
 
@@ -20,7 +20,7 @@ function ElectivesPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/admin/electives', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/electives', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch electives');
@@ -59,7 +59,7 @@ function ElectivesPage() {
     if (window.confirm('Are you sure you want to delete this elective?')) {
       try {
         const token = localStorage.getItem('accessToken');
-        await fetch(`http://127.0.0.1:8000/api/v1/admin/electives/${electiveId}`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/electives/${electiveId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -83,16 +83,16 @@ function ElectivesPage() {
     }
 
     const token = localStorage.getItem('accessToken');
-    const url = isEditing 
-      ? `http://127.0.0.1:8000/api/v1/admin/electives/${currentElective.id}` 
-      : 'http://127.0.0.1:8000/api/v1/admin/electives';
+    const url = isEditing
+      ? `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/electives/${currentElective.id}`
+      : import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/electives';
     const method = isEditing ? 'PUT' : 'POST';
     const body = JSON.stringify({ name, description, capacity });
 
     try {
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
@@ -113,7 +113,7 @@ function ElectivesPage() {
   const handleEnroll = async (electiveId) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/users/electives/enroll/${electiveId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/electives/enroll/${electiveId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -147,7 +147,7 @@ function ElectivesPage() {
       {currentUser && currentUser.role === 'admin' && (
         <button onClick={handleAdd}>Add Elective</button>
       )}
-      
+
       {electives.length === 0 ? (
         <p>No electives available.</p>
       ) : (
@@ -175,9 +175,9 @@ function ElectivesPage() {
                       <button className="delete-btn" onClick={() => handleDelete(elective.id)}>Delete</button>
                     </>
                   ) : (
-                    <button 
+                    <button
                       className="enroll-btn"
-                      onClick={() => handleEnroll(elective.id)} 
+                      onClick={() => handleEnroll(elective.id)}
                       disabled={elective.enrolled_students && (elective.enrolled_students.includes(currentUser.email) || elective.enrolled_students.length >= elective.capacity)}
                     >
                       {elective.enrolled_students && elective.enrolled_students.includes(currentUser.email) ? 'Enrolled' : 'Enroll'}

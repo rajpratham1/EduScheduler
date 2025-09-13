@@ -18,7 +18,7 @@ function ClassroomsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/admin/classrooms', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/classrooms', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch classrooms');
@@ -57,7 +57,7 @@ function ClassroomsPage() {
     if (window.confirm('Are you sure you want to delete this classroom?')) {
       try {
         const token = localStorage.getItem('accessToken');
-        await fetch(`http://127.0.0.1:8000/api/v1/admin/classrooms/${classroomId}`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/classrooms/${classroomId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -81,16 +81,16 @@ function ClassroomsPage() {
     }
 
     const token = localStorage.getItem('accessToken');
-    const url = isEditing 
-      ? `http://127.0.0.1:8000/api/v1/admin/classrooms/${currentClassroom.id}` 
-      : 'http://127.0.0.1:8000/api/v1/admin/classrooms';
+    const url = isEditing
+      ? `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/classrooms/${currentClassroom.id}`
+      : import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/classrooms';
     const method = isEditing ? 'PUT' : 'POST';
     const body = JSON.stringify({ name, capacity, resources: resources.split(',').map(r => r.trim()).filter(r => r) });
 
     try {
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
@@ -124,7 +124,7 @@ function ClassroomsPage() {
       <h1 className="page-title">Manage Classrooms</h1>
       {error && <div className="error">Error: {error}</div>}
       <button onClick={handleAdd}>Add Classroom</button>
-      
+
       {classrooms.length === 0 ? (
         <p>No classrooms found.</p>
       ) : (

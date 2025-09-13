@@ -19,7 +19,7 @@ function StudentsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/admin/students', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/students', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch students');
@@ -60,7 +60,7 @@ function StudentsPage() {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
         const token = localStorage.getItem('accessToken');
-        await fetch(`http://127.0.0.1:8000/api/v1/admin/students/${studentId}`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/students/${studentId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -92,16 +92,16 @@ function StudentsPage() {
     }
 
     const token = localStorage.getItem('accessToken');
-    const url = isEditing 
-      ? `http://127.0.0.1:8000/api/v1/admin/students/${currentStudent.id}` 
-      : 'http://127.0.0.1:8000/api/v1/admin/students';
+    const url = isEditing
+      ? `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/students/${currentStudent.id}`
+      : import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/students';
     const method = isEditing ? 'PUT' : 'POST';
     const body = JSON.stringify({ name, email, department, batch });
 
     try {
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
@@ -136,7 +136,7 @@ function StudentsPage() {
       <h1 className="page-title">Manage Students</h1>
       {error && <div className="error">Error: {error}</div>}
       <button onClick={handleAdd}>Add Student</button>
-      
+
       {students.length === 0 ? (
         <p>No students found.</p>
       ) : (

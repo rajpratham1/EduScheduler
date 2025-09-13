@@ -46,7 +46,7 @@ function TimetablesPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/admin/timetables', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/timetables', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch timetables');
@@ -134,17 +134,17 @@ function TimetablesPage() {
         data: { items, columns }, // Store the DND state
       };
 
-      let url = 'http://127.0.0.1:8000/api/v1/admin/timetables';
+      let url = import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/timetables';
       let method = 'POST';
 
       if (selectedTimetableId) {
-        url = `http://127.0.0.1:8000/api/v1/admin/timetables/${selectedTimetableId}`;
+        url = `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/timetables/${selectedTimetableId}`;
         method = 'PUT';
       }
 
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
@@ -168,12 +168,12 @@ function TimetablesPage() {
   const handleLoadTimetable = async (timetableId) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/admin/timetables/${timetableId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/timetables/${timetableId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to load timetable');
       const data = await response.json();
-      
+
       setItems(data.data.items);
       setColumns(data.data.columns);
       setTimetableName(data.name);
@@ -188,7 +188,7 @@ function TimetablesPage() {
     if (window.confirm('Are you sure you want to delete this timetable?')) {
       try {
         const token = localStorage.getItem('accessToken');
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/admin/timetables/${timetableId}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/timetables/${timetableId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -273,12 +273,12 @@ function TimetablesPage() {
         <form onSubmit={handleSaveTimetable}>
           <h3>{selectedTimetableId ? 'Update' : 'Save'} Timetable</h3>
           {error && <div className="error">Error: {error}</div>}
-          <input 
-            type="text" 
-            value={timetableName} 
-            onChange={e => setTimetableName(e.target.value)} 
-            placeholder="Timetable Name" 
-            required 
+          <input
+            type="text"
+            value={timetableName}
+            onChange={e => setTimetableName(e.target.value)}
+            placeholder="Timetable Name"
+            required
           />
           <button type="submit">{selectedTimetableId ? 'Update' : 'Save'}</button>
         </form>

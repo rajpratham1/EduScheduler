@@ -10,7 +10,7 @@ function FeedbackForm() {
     setStatus('Sending feedback...');
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/feedback', {
+            const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

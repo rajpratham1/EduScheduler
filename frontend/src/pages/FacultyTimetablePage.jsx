@@ -21,9 +21,9 @@ function FacultyTimetablePage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      
+
       // Fetch timetable
-      const timetableResponse = await fetch('http://127.0.0.1:8000/api/v1/users/me/timetable', {
+      const timetableResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me/timetable', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!timetableResponse.ok) throw new Error('Failed to fetch timetable');
@@ -31,7 +31,7 @@ function FacultyTimetablePage() {
       setTimetable(timetableData);
 
       // Fetch user profile for unavailable slots
-      const profileResponse = await fetch('http://127.0.0.1:8000/api/v1/users/me', {
+      const profileResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!profileResponse.ok) throw new Error('Failed to fetch profile');
@@ -52,7 +52,7 @@ function FacultyTimetablePage() {
   }, [currentUser]);
 
   const handleSlotToggle = (slot) => {
-    setUnavailableSlots(prev => 
+    setUnavailableSlots(prev =>
       prev.includes(slot) ? prev.filter(s => s !== slot) : [...prev, slot]
     );
   };
@@ -60,7 +60,7 @@ function FacultyTimetablePage() {
   const handleSaveAvailability = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/me/availability', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me/availability', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

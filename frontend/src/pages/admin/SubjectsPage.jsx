@@ -18,7 +18,7 @@ function SubjectsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/admin/subjects', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/subjects', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch subjects');
@@ -57,7 +57,7 @@ function SubjectsPage() {
     if (window.confirm('Are you sure you want to delete this subject?')) {
       try {
         const token = localStorage.getItem('accessToken');
-        await fetch(`http://127.0.0.1:8000/api/v1/admin/subjects/${subjectId}`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/subjects/${subjectId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -85,16 +85,16 @@ function SubjectsPage() {
     }
 
     const token = localStorage.getItem('accessToken');
-    const url = isEditing 
-      ? `http://127.0.0.1:8000/api/v1/admin/subjects/${currentSubject.id}` 
-      : 'http://127.0.0.1:8000/api/v1/admin/subjects';
+    const url = isEditing
+      ? `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/subjects/${currentSubject.id}`
+      : import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/subjects';
     const method = isEditing ? 'PUT' : 'POST';
     const body = JSON.stringify({ name, code, department });
 
     try {
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
@@ -128,7 +128,7 @@ function SubjectsPage() {
       <h1 className="page-title">Manage Subjects</h1>
       {error && <div className="error">Error: {error}</div>}
       <button onClick={handleAdd}>Add Subject</button>
-      
+
       {subjects.length === 0 ? (
         <p>No subjects found.</p>
       ) : (

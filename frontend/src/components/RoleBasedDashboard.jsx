@@ -12,7 +12,7 @@ function RoleBasedDashboard() {
   useEffect(() => {
     const fetchUserRole = async () => {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/me', {
+            const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from 'src/contexts/AuthContext';
+import { useAuth } from 'src/contexts/AuthContext.jsx';
 import Modal from 'src/components/Modal';
 import './CulturalSessionsPage.css'; // Import the CSS file
 
@@ -22,7 +22,7 @@ function CulturalSessionsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://127.0.0.1:8000/api/v1/admin/cultural-sessions', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/cultural-sessions', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch cultural sessions');
@@ -65,7 +65,7 @@ function CulturalSessionsPage() {
     if (window.confirm('Are you sure you want to delete this cultural session?')) {
       try {
         const token = localStorage.getItem('accessToken');
-        await fetch(`http://127.0.0.1:8000/api/v1/admin/cultural-sessions/${sessionId}`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/cultural-sessions/${sessionId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -85,16 +85,16 @@ function CulturalSessionsPage() {
     }
 
     const token = localStorage.getItem('accessToken');
-    const url = isEditing 
-      ? `http://127.0.0.1:8000/api/v1/admin/cultural-sessions/${currentSession.id}` 
-      : 'http://127.0.0.1:8000/api/v1/admin/cultural-sessions';
+    const url = isEditing
+      ? `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/cultural-sessions/${currentSession.id}`
+      : import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/cultural-sessions';
     const method = isEditing ? 'PUT' : 'POST';
     const body = JSON.stringify({ name, description, date, time, location });
 
     try {
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
@@ -115,7 +115,7 @@ function CulturalSessionsPage() {
   const handleParticipate = async (sessionId) => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/users/cultural-sessions/participate/${sessionId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/cultural-sessions/participate/${sessionId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -151,7 +151,7 @@ function CulturalSessionsPage() {
       {currentUser && currentUser.role === 'admin' && (
         <button onClick={handleAdd}>Add Cultural Session</button>
       )}
-      
+
       {sessions.length === 0 ? (
         <p>No cultural sessions available.</p>
       ) : (
@@ -183,9 +183,9 @@ function CulturalSessionsPage() {
                       <button className="delete-btn" onClick={() => handleDelete(session.id)}>Delete</button>
                     </>
                   ) : (
-                    <button 
+                    <button
                       className="participate-btn"
-                      onClick={() => handleParticipate(session.id)} 
+                      onClick={() => handleParticipate(session.id)}
                       disabled={session.participants && session.participants.includes(currentUser.email)}
                     >
                       {session.participants && session.participants.includes(currentUser.email) ? 'Participating' : 'Participate'}

@@ -13,12 +13,12 @@ function UserManagementPage() {
       const token = localStorage.getItem('accessToken');
       const headers = { Authorization: `Bearer ${token}` };
 
-      const pendingResponse = await fetch('http://127.0.0.1:8000/api/v1/admin/users/pending', { headers });
+      const pendingResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/users/pending', { headers });
       if (!pendingResponse.ok) throw new Error('Failed to fetch pending users');
       const pendingData = await pendingResponse.json();
       setPendingUsers(pendingData);
 
-      const allUsersResponse = await fetch('http://127.0.0.1:8000/api/v1/users/all', { headers });
+      const allUsersResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/all', { headers });
       if (!allUsersResponse.ok) throw new Error('Failed to fetch all users');
       const allUsersData = await allUsersResponse.json();
       setAllUsers(allUsersData);
@@ -37,7 +37,7 @@ function UserManagementPage() {
   const handleApprove = async (email) => {
     try {
       const token = localStorage.getItem('accessToken');
-      await fetch(`http://127.0.0.1:8000/api/v1/admin/users/approve/${email}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/users/approve/${email}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -50,7 +50,7 @@ function UserManagementPage() {
   const handleDisapprove = async (email) => {
     try {
       const token = localStorage.getItem('accessToken');
-      await fetch(`http://127.0.0.1:8000/api/v1/admin/users/disapprove/${email}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/users/disapprove/${email}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -63,7 +63,7 @@ function UserManagementPage() {
   const handleChangeRole = async (email, newRole) => {
     try {
       const token = localStorage.getItem('accessToken');
-      await fetch(`http://127.0.0.1:8000/api/v1/admin/users/role/${email}?new_role=${newRole}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/users/role/${email}?new_role=${newRole}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
