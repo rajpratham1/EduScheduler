@@ -1,0 +1,148 @@
+.cultural-sessions-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.cultural-sessions-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.cultural-sessions-container button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.cultural-sessions-container button:hover {
+    background-color: #0056b3;
+}
+
+.session-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+}
+
+.session-table th, .session-table td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.session-table th {
+    background-color: #f8f8f8;
+    color: #333;
+    font-weight: bold;
+}
+
+.session-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.session-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.session-table button {
+    margin-right: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.session-table .edit-btn {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.session-table .edit-btn:hover {
+    background-color: #e0a800;
+}
+
+.session-table .delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.session-table .delete-btn:hover {
+    background-color: #c82333;
+}
+
+.session-table .participate-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.session-table .participate-btn:hover {
+    background-color: #218838;
+}
+
+.session-table .participate-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Modal Form Styling */
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="date"],
+.modal-content input[type="time"],
+.modal-content textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="date"]:focus,
+.modal-content input[type="time"]:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.modal-content button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+.cultural-sessions-container .error {
+    color: #dc3545;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.cultural-sessions-container p {
+    color: #666;
+    font-style: italic;
+}

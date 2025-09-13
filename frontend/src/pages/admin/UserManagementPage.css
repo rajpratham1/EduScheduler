@@ -1,0 +1,101 @@
+.user-management-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.user-management-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.user-management-container h3 {
+    color: #555;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+}
+
+.user-table th, .user-table td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.user-table th {
+    background-color: #f8f8f8;
+    color: #333;
+    font-weight: bold;
+}
+
+.user-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.user-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.approve-btn, .disapprove-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.approve-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.approve-btn:hover {
+    background-color: #218838;
+}
+
+.disapprove-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.disapprove-btn:hover {
+    background-color: #c82333;
+}
+
+select {
+    padding: 7px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 14px;
+}
+
+select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.user-management-container .error {
+    color: #dc3545;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.user-management-container p {
+    color: #666;
+    font-style: italic;
+}

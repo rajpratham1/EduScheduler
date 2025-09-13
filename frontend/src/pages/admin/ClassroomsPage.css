@@ -1,0 +1,130 @@
+.classrooms-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.classrooms-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.classrooms-container button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.classrooms-container button:hover {
+    background-color: #0056b3;
+}
+
+.classroom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+}
+
+.classroom-table th, .classroom-table td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.classroom-table th {
+    background-color: #f8f8f8;
+    color: #333;
+    font-weight: bold;
+}
+
+.classroom-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.classroom-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.classroom-table button {
+    margin-right: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.classroom-table .edit-btn {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.classroom-table .edit-btn:hover {
+    background-color: #e0a800;
+}
+
+.classroom-table .delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.classroom-table .delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Modal Form Styling */
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="number"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.modal-content button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+.classrooms-container .error {
+    color: #dc3545;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.classrooms-container p {
+    color: #666;
+    font-style: italic;
+}

@@ -1,0 +1,152 @@
+.timetables-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.timetables-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.timetable-actions button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.timetable-actions button:hover {
+    background-color: #0056b3;
+}
+
+.dnd-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.column {
+    background-color: lightgrey;
+    padding: 10px;
+    border-radius: 8px;
+    width: 280px; /* Adjusted width for better fit */
+    min-height: 400px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.column h3 {
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.item {
+    user-select: none;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background-color: #456C86;
+    color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+.item:hover {
+    background-color: #3a5a70;
+}
+
+.item.is-dragging {
+    background-color: #263B4A;
+}
+
+/* Modal Form Styling */
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.modal-content input[type="text"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.modal-content button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+.timetable-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.timetable-list-table th, .timetable-list-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.timetable-list-table th {
+    background-color: #f8f8f8;
+}
+
+.timetable-list-table button {
+    margin-right: 5px;
+    padding: 6px 10px;
+    font-size: 13px;
+    margin-bottom: 0; /* Override previous margin-bottom */
+}
+
+.timetable-list-table .delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.timetable-list-table .delete-btn:hover {
+    background-color: #c82333;
+}
+
+.timetables-container .error {
+    color: #dc3545;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.timetables-container p {
+    color: #666;
+    font-style: italic;
+}

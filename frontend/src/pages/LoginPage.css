@@ -1,0 +1,83 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  animation: gradient-animation 10s ease infinite;
+  overflow: hidden; /* Hide overflow from animations */
+}
+
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.login-container {
+  background: rgba(255, 255, 255, 0.15); /* Slightly more opaque */
+  padding: 50px;
+  border-radius: 20px;
+  backdrop-filter: blur(15px); /* Stronger blur */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Stronger border */
+  text-align: center;
+  color: var(--text-dark);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Glassmorphism shadow */
+  animation: slide-up 1s ease-out forwards;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+@keyframes slide-up {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-container h1 {
+  color: var(--text-dark);
+  margin-bottom: 15px;
+  font-size: 2.5em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.login-container p {
+  margin-bottom: 30px;
+  font-size: 1.1em;
+}
+
+.google-login-button {
+  background-color: #4285F4; /* Google Blue */
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.google-login-button:hover {
+  background-color: #357ae8;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.google-login-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Optional: Add a Google icon */
+.google-login-button::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cuc2NoZW1hc2NoZW1hcy5jb20vMjAwMS9zdmciPgo8cGF0aCBkPSJNMTkuOTk5OSAxMC4yMDQxQzIwLjAwMDQgOS41MzQ1NSAxOS45MzI1IDguODc2NjIgMTkuNzk2MiA4LjIyOTQ1SDEwLjIwMzFWMTEuNzY3M0gxNS44NzI1QzE1LjYxNzIgMTMuMTQ1MiAxNC43MjYyIDE0LjQyNDcgMTMuNDYwNCAxNS4yNjM4VjE3LjY3NjZIMTYuNjkzNkMxOC42MDQ1IDE1Ljg3NjcgMTkuNzY5NSAxMy4yMDI1IDE5Ljk5OTkgMTAuMjA0MVoiIGZpbGw9IiM0Mjg1RjQiLz4KPHBhdGggZD0iTTEwLjIwMzEgMTkuOTk5OUMxMi45NjkgMTkuOTk5OSAxNS4zOTQ4IDE5LjA4MjIgMTcuMjY5MSAxNy42NzY2TDEzLjQ2MDQgMTUuMjYzOEMxMi40MzY3IDE1LjkzNzkgMTEuMjYxMiAxNi4zNDQ1IDEwLjIwMzEgMTYuMzQ0NUM3LjY1NzY3IDE2LjM0NDUgNS40OTY5MiAxNC42OTY1IDQuNzQzNzUgMTIuNDg2N0wxLjY1NjI1IDEzLjY4MzVWMTYuNjk2NkM0LjA2NDY1IDE4LjYxNDcgNi45MzY5IDE5Ljk5OTkgMTAuMjAzMSAxOS45OTk5WiIgZmlsbD0iIzM0QTg1MyIvPgo8cGF0aCBkPSJNLjAwMDEyMiAxMC4yMDQxQy0wLjAwMDQ1IDkuNTM0NTUgMC4wNjcyOTcgOC44NzY2MiAwLjIwMzYyIDguMjI5NDVIMTAuMjAzMVYxMS43NjczSDE1Ljg3MjVDMTUuNjE3MiAxMy4xNDUyIDE0LjcyNjIgMTQuNDI0NyAxMy40NjA0IDE1LjI2MzhWMTcuNjc2NkgxNi42OTM2QzE4LjYwNDUgMTUuODc2NyAxOS43Njk1IDEzLjIwMjUgMTkuOTk5OSAxMC4yMDQxWiIgZmlsbD0iI0ZCQjQwMCIdHJhbnNmb3JtPSJyb3RhdGUoLTE4MCAxMCAxMCkiLz4KPHBhdGggZD0iTTEwLjIwMzEgMy42NTU0OUMxMS42OTQ5IDMuNjU1NDkgMTIuOTY5IDQuMjQ3NzMgMTMuOTk2NyA1LjE3NTQ5TDE3LjI2OTEgMi43MzAzN0MxNS4zOTQ4IDEuMzI0NzkgMTIuOTY5IDAuMjA0MDk3IDEwLjIwMzEgMC4yMDQwOTdDNy42NTc2NyAwLjIwNDA5NyA1LjQ5NjkyIDEuODUyMDQgNC43NDM3NSAzLjA2MTgyTDEuNjU2MjUgMS44NjQ5NlY0Ljg3Nzk2QzQuMDY0NjUgNi43OTYwMiA2LjkzNjkgOC4xODA3NyAxMC4yMDMxIDguMTgwNzdaIiBmaWxsPSIjRUE0MzM1Ii8+Cjwvc3ZnPgo=');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
