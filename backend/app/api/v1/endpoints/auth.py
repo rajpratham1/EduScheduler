@@ -6,12 +6,12 @@ from datetime import datetime, timedelta
 from app.schemas.auth import Token, GoogleLoginRequest, TokenData
 from app.core.config import settings
 from firebase_admin import auth
-from app.services.firebase import db
 
 router = APIRouter()
 
 @router.post("/login/google", response_model=Token)
 async def login_google(request: GoogleLoginRequest):
+    from app.services.firebase import db
     try:
         decoded_token = auth.verify_id_token(request.token)
         email = decoded_token.get("email")
