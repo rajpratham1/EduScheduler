@@ -10,20 +10,16 @@ firebase_auth = None
 
 def initialize_firebase():
     global db, bucket, firebase_auth
-    
-    # Read the service account JSON file content
+
+    # Read the service account JSON content from environment variable
     try:
-        with open(settings.GOOGLE_APPLICATION_CREDENTIALS, 'r') as f:
-            service_account_info = json.load(f)
-        # Extract private_key as a string and pass it directly
-        private_key = service_account_info["private_key"]
-        service_account_info["private_key"] = private_key
-    except FileNotFoundError:
-        print(f"Error: Service account file not found at {settings.GOOGLE_APPLICATION_CREDENTIALS}")
-        raise
+        service_account_info = json.loads(settings.FIREBASE_PRIVATE_KEY_CONTENT)
     except json.JSONDecodeError as e:
-        print(f"Error: Could not decode service account JSON file: {e}")
-        raise
+        print(f"Error: Could not decode Firebase private key JSON from environment variable: {e}")
+        raise ValueError("Invalid Firebase private key content provided.")
+    except TypeError:
+        print("Error: FIREBASE_PRIVATE_KEY_CONTENT environment variable is not set or is not a string.")
+        raise ValueError("Firebase private key content is missing.")
 
     cred = credentials.Certificate(service_account_info)
     firebase_admin.initialize_app(cred, {
