@@ -11,19 +11,30 @@ firebase_auth = None
 def initialize_firebase():
     global db, bucket, firebase_auth
 
-    # Read the service account JSON content from environment variable
-    try:
-        print(f"DEBUG: FIREBASE_PRIVATE_KEY_CONTENT type: {type(settings.FIREBASE_PRIVATE_KEY_CONTENT)}")
-        print(f"DEBUG: FIREBASE_PRIVATE_KEY_CONTENT first 50 chars: {str(settings.FIREBASE_PRIVATE_KEY_CONTENT)[:50]}...")
-        service_account_info = json.loads(settings.FIREBASE_PRIVATE_KEY_CONTENT)
-    except json.JSONDecodeError as e:
-        print(f"Error: Could not decode Firebase private key JSON from environment variable: {e}")
-        raise ValueError("Invalid Firebase private key content provided.")
-    except TypeError:
-        print("Error: FIREBASE_PRIVATE_KEY_CONTENT environment variable is not set or is not a string.")
-        raise ValueError("Firebase private key content is missing.")
+    cred = None
+    # Prioritize loading from a secret file path if provided
+    service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
 
-    cred = credentials.Certificate(service_account_info)
+    if service_account_path:
+        try:
+            cred = credentials.Certificate(service_account_path)
+            print(f"Firebase initialized from file path: {service_account_path}")
+        except Exception as e:
+            print(f"ERROR: Could not initialize Firebase from file path: {e}")
+            raise e
+    # Fallback to environment variable content (less reliable)
+    elif settings.FIREBASE_PRIVATE_KEY_CONTENT:
+        try:
+            service_account_info = json.loads(settings.FIREBASE_PRIVATE_KEY_CONTENT)
+            cred = credentials.Certificate(service_account_info)
+            print("Firebase initialized from environment variable content.")
+        except Exception as e:
+            print(f"ERROR: Could not initialize Firebase from environment variable: {e}")
+            raise e
+
+    if not cred:
+        raise ValueError("Failed to create Firebase credentials. Ensure FIREBASE_SERVICE_ACCOUNT_PATH or FIREBASE_PRIVATE_KEY_CONTENT is set correctly.")
+
     firebase_admin.initialize_app(cred, {
         'storageBucket': settings.FIREBASE_STORAGE_BUCKET
     })
