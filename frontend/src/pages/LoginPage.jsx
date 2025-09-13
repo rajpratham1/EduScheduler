@@ -39,7 +39,8 @@ function LoginPage() {
         navigate('/dashboard'); // Redirect to a protected route
       } else {
         // Handle login failure
-        console.error('Backend login failed');
+        const errorData = await response.json();
+        console.error('Backend login failed:', errorData.detail || 'Unknown error');
       }
     } catch (error) {
       console.error('Google sign-in error', error);

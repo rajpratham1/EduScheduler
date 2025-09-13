@@ -48,7 +48,4 @@ async def login_google(request: GoogleLoginRequest, db: firestore.Client = Depen
     except auth.InvalidIdTokenError as e:
         raise HTTPException(status_code=401, detail=f"Invalid Firebase ID token: {e}")
     except Exception as e:
-        print(f"!!! UNEXPECTED ERROR IN GOOGLE LOGIN: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail=f"Backend error during Google login: {e}")
