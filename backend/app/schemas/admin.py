@@ -59,3 +59,27 @@ class Batch(BaseModel):
     name: str # e.g., "2024-2028"
     course_id: str
     year: Optional[int] = None # e.g., 1, 2, 3, 4
+
+class ClassAssignment(BaseModel):
+    id: Optional[str] = None
+    batch_id: str
+    course_id: str
+    subject_id: str
+    faculty_id: str
+    classroom_id: str
+    day_of_week: str # e.g., "Monday"
+    time_slot: str # e.g., "09:00-10:00"
+
+from typing import Dict
+
+class SeatingPlanRequest(BaseModel):
+    batch_id: str
+
+class SeatingPlan(BaseModel):
+    id: Optional[str] = None
+    classroom_id: str
+    batch_id: str
+    plan: Dict[str, str] # Key: seat_number (e.g., "A1"), Value: student_email
+
+class FeedbackSettings(BaseModel):
+    google_form_link: str

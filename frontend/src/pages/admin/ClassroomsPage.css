@@ -128,3 +128,48 @@
     color: #666;
     font-style: italic;
 }
+
+.generate-seating-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.generate-seating-btn:hover {
+    background-color: #5a6268;
+}
+
+.seating-plan-display {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.seating-plan-display h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+.seating-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.seat-item {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #495057;
+}
+
+.seat-item strong {
+    display: block;
+    font-size: 1.1em;
+    margin-bottom: 3px;
+}

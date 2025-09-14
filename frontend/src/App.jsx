@@ -14,7 +14,9 @@ import SubjectsPage from 'src/pages/admin/SubjectsPage';
 import ClassroomsPage from 'src/pages/admin/ClassroomsPage';
 import TimetablesPage from 'src/pages/admin/TimetablesPage';
 import UserManagementPage from 'src/pages/admin/UserManagementPage';
-import CoursesPage from 'src/pages/admin/CoursesPage'; // Import the new page
+import CoursesPage from 'src/pages/admin/CoursesPage';
+import AssignmentsPage from 'src/pages/admin/AssignmentsPage';
+import FeedbackSettingsPage from 'src/pages/admin/FeedbackSettingsPage'; // Import the new page
 import ElectivesPage from 'src/pages/ElectivesPage';
 import CulturalSessionsPage from 'src/pages/CulturalSessionsPage';
 import PendingApprovalPage from 'src/pages/PendingApprovalPage';
@@ -59,8 +61,10 @@ function App() {
               <Route path="subjects" element={<SubjectsPage />} />
               <Route path="classrooms" element={<ClassroomsPage />} />
               <Route path="courses" element={<CoursesPage />} />
+              <Route path="assignments" element={<AssignmentsPage />} />
               <Route path="timetables" element={<TimetablesPage />} />
               <Route path="users" element={<UserManagementPage />} />
+              <Route path="settings" element={<FeedbackSettingsPage />} />
             </Route>
           </Route>
           <Route path="/" element={<LoginPage />} />
