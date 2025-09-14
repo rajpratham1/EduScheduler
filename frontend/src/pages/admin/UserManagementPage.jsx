@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import './UserManagementPage.css'; // Assuming you'll create this CSS file
+import './UserManagementPage.css';
 
 function UserManagementPage() {
   const [pendingUsers, setPendingUsers] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
-  const fetchUsers = async () => {
+  const fetchPendingUsers = async () => {
     try {
       setLoading(true);
+      setError('');
+      setMessage('');
       const token = localStorage.getItem('accessToken');
       const headers = { Authorization: `Bearer ${token}` };
 
-      const pendingResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/users/pending', { headers });
-      if (!pendingResponse.ok) throw new Error('Failed to fetch pending users');
-      const pendingData = await pendingResponse.json();
-      setPendingUsers(pendingData);
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/users/pending', { headers });
+      
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || 'Failed to fetch pending users');
+      }
 
-      const allUsersResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/all', { headers });
-      if (!allUsersResponse.ok) throw new Error('Failed to fetch all users');
-      const allUsersData = await allUsersResponse.json();
-      setAllUsers(allUsersData);
+      const data = await response.json();
+      setPendingUsers(data);
 
     } catch (err) {
       setError(err.message);
@@ -31,65 +33,53 @@ function UserManagementPage() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchPendingUsers();
   }, []);
 
   const handleApprove = async (email) => {
     try {
+      setError('');
+      setMessage('');
       const token = localStorage.getItem('accessToken');
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/users/approve/${email}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/users/${email}/approve`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchUsers(); // Refresh list
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || 'Failed to approve user');
+      }
+
+      const resData = await response.json();
+      setMessage(resData.message || `User ${email} approved successfully.`);
+      // Refresh list after approval
+      setPendingUsers(prevUsers => prevUsers.filter(user => user.email !== email));
     } catch (err) {
       setError(err.message);
     }
   };
-
-  const handleDisapprove = async (email) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/users/disapprove/${email}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchUsers(); // Refresh list
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleChangeRole = async (email, newRole) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/users/role/${email}?new_role=${newRole}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchUsers(); // Refresh list
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  if (loading) return <div className="user-management-container">Loading...</div>;
-  if (error) return <div className="user-management-container error">Error: {error}</div>;
 
   return (
     <div className="user-management-container">
       <h1 className="page-title">User Management</h1>
 
+      {error && <p className="form-error">{error}</p>}
+      {message && <p className="form-success">{message}</p>}
+
       <section className="pending-approvals">
-        <h3>Pending Approvals</h3>
-        {pendingUsers.length === 0 ? (
+        <h2>Pending Approvals</h2>
+        {loading ? (
+          <p>Loading pending users...</p>
+        ) : pendingUsers.length === 0 ? (
           <p>No pending user approvals.</p>
         ) : (
           <table className="user-table">
             <thead>
               <tr>
                 <th>Email</th>
-                <th>Role</th>
+                <th>Display Name</th>
+                <th>Admin ID Provided</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -97,49 +87,12 @@ function UserManagementPage() {
               {pendingUsers.map(user => (
                 <tr key={user.id}>
                   <td>{user.email}</td>
-                  <td>{user.role}</td>
+                  <td>{user.display_name || 'N/A'}</td>
+                  <td>{user.admin_id || 'N/A'}</td>
                   <td>
-                    <button className="approve-btn" onClick={() => handleApprove(user.email)}>Approve</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-      <section className="all-users">
-        <h3>All Users</h3>
-        {allUsers.length === 0 ? (
-          <p>No users found.</p>
-        ) : (
-          <table className="user-table">
-            <thead>
-              <tr>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Approved</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allUsers.map(user => (
-                <tr key={user.id}>
-                  <td>{user.email}</td>
-                  <td>
-                    <select value={user.role} onChange={(e) => handleChangeRole(user.email, e.target.value)}>
-                      <option value="student">Student</option>
-                      <option value="faculty">Faculty</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </td>
-                  <td>{user.is_approved ? 'Yes' : 'No'}</td>
-                  <td>
-                    {user.is_approved ? (
-                      <button className="disapprove-btn" onClick={() => handleDisapprove(user.email)}>Disapprove</button>
-                    ) : (
-                      <button className="approve-btn" onClick={() => handleApprove(user.email)}>Approve</button>
-                    )}
+                    <button className="approve-btn" onClick={() => handleApprove(user.email)}>
+                      Approve
+                    </button>
                   </td>
                 </tr>
               ))}

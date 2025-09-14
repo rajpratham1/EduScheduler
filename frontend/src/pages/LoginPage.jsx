@@ -1,49 +1,80 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, googleProvider } from 'src/services/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import './LoginPage.css'; // For animations and styling
+import '../components/Modal.css'; // For the new modal
 
 function LoginPage() {
   const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [showAdminIdModal, setShowAdminIdModal] = useState(false);
+  const [adminId, setAdminId] = useState('');
+  const [idToken, setIdToken] = useState(null);
 
   useEffect(() => {
-    // Ensure the body always has the light-theme class on this page
     document.body.className = 'light-theme';
-
-    // Optional: Clean up when component unmounts if you want to revert to global theme
-    // This might not be necessary if the theme is managed globally by App.jsx
-    return () => {
-      // You might want to restore the previous theme here if needed
-      // For now, we assume App.jsx will handle the theme for other pages
-    };
   }, []);
+
+  const performLogin = async (idToken, adminId = null) => {
+    setError('');
+    try {
+      const payload = { token: idToken };
+      if (adminId) {
+        payload.admin_id = adminId;
+      }
+
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/auth/login/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('accessToken', data.access_token);
+        navigate('/dashboard');
+      } else {
+        switch (data.detail) {
+          case 'NEW_STUDENT_MISSING_ADMIN_ID':
+            // First time student, ask for Admin ID
+            setIdToken(idToken);
+            setShowAdminIdModal(true);
+            break;
+          case 'ACCOUNT_PENDING_APPROVAL':
+            navigate('/pending-approval');
+            break;
+          case 'ACCOUNT_REJECTED':
+            setError('Your account registration has been rejected. Please contact an administrator.');
+            break;
+          default:
+            setError(data.detail || 'An unknown error occurred.');
+            break;
+        }
+      }
+    } catch (err) {
+      console.error('Backend interaction error', err);
+      setError('Failed to connect to the server.');
+    }
+  };
 
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      
-      // Send the token to your backend
-      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/auth/login/google', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: idToken }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('accessToken', data.access_token);
-        navigate('/dashboard'); // Redirect to a protected route
-      } else {
-        // Handle login failure
-        const errorData = await response.json();
-        console.error('Backend login failed:', errorData.detail || 'Unknown error');
-      }
+      const token = await result.user.getIdToken();
+      await performLogin(token);
     } catch (error) {
       console.error('Google sign-in error', error);
+      setError('Google sign-in failed. Please try again.');
+    }
+  };
+
+  const handleAdminIdSubmit = async (e) => {
+    e.preventDefault();
+    if (adminId && idToken) {
+      setShowAdminIdModal(false);
+      await performLogin(idToken, adminId);
     }
   };
 
@@ -55,7 +86,30 @@ function LoginPage() {
         <button onClick={handleGoogleLogin} className="google-login-button">
           Sign in with Google
         </button>
+        {error && <p className="login-error">{error}</p>}
       </div>
+
+      {showAdminIdModal && (
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <h2>Student Registration</h2>
+            <p>Please enter the Admin ID provided by your institution to request access.</p>
+            <form onSubmit={handleAdminIdSubmit}>
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="Enter Admin ID"
+                value={adminId}
+                onChange={(e) => setAdminId(e.target.value)}
+                required
+              />
+              <div className="modal-actions">
+                <button type="submit" className="modal-button primary">Submit for Approval</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

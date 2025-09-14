@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class Token(BaseModel):
     access_token: str
@@ -10,3 +11,4 @@ class TokenData(BaseModel):
 
 class GoogleLoginRequest(BaseModel):
     token: str
+    admin_id: Optional[str] = None # For student registration

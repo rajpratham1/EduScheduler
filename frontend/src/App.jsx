@@ -16,6 +16,7 @@ import TimetablesPage from 'src/pages/admin/TimetablesPage';
 import UserManagementPage from 'src/pages/admin/UserManagementPage';
 import ElectivesPage from 'src/pages/ElectivesPage';
 import CulturalSessionsPage from 'src/pages/CulturalSessionsPage';
+import PendingApprovalPage from 'src/pages/PendingApprovalPage';
 import './App.css';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         </button>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/pending-approval" element={<PendingApprovalPage />} />
           <Route 
             path="/dashboard" 
             element={
