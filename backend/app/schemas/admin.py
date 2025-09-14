@@ -83,3 +83,13 @@ class SeatingPlan(BaseModel):
 
 class FeedbackSettings(BaseModel):
     google_form_link: str
+
+class TimetableGenerationRequest(BaseModel):
+    selected_batches: List[str]
+    selected_subjects: List[str]
+    selected_faculty: List[str]
+    selected_classrooms: List[str]
+    max_classes_per_day: Optional[int] = None
+    fixed_slots: Optional[List[Dict[str, Any]]] = None
+    leaves: Optional[List[Dict[str, Any]]] = None
+    electives: Optional[List[str]] = None

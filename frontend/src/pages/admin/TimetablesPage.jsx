@@ -1,57 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import Modal from 'src/components/Modal'; // Import Modal component
-import { useAuth } from 'src/contexts/AuthContext'; // Import useAuth
-import './TimetablesPage.css'; // We will create this CSS file
-
-const initialItems = [
-  { id: 'item-1', content: 'Math Lecture' },
-  { id: 'item-2', content: 'Physics Lab' },
-  { id: 'item-3', content: 'Chemistry Tutorial' },
-  { id: 'item-4', content: 'Biology Seminar' },
-];
-
-const initialColumns = {
-  'column-1': {
-    id: 'column-1',
-    title: 'Available Items',
-    itemIds: initialItems.map(item => item.id),
-  },
-  'monday-9am': {
-    id: 'monday-9am',
-    title: 'Monday 9:00 AM',
-    itemIds: [],
-  },
-  'monday-10am': {
-    id: 'monday-10am',
-    title: 'Monday 10:00 AM',
-    itemIds: [],
-  },
-  // Add more columns for days and times
-};
+import Modal from 'src/components/Modal';
+import { useAuth } from 'src/contexts/AuthContext';
+import './TimetablesPage.css';
 
 function TimetablesPage() {
   const { currentUser } = useAuth();
-  const [items, setItems] = useState(initialItems);
-  const [columns, setColumns] = useState(initialColumns);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [showLoadModal, setShowLoadModal] = useState(false);
-  const [timetableName, setTimetableName] = useState('');
-  const [allTimetables, setAllTimetables] = useState([]);
-  const [selectedTimetableId, setSelectedTimetableId] = useState(null);
+  const [message, setMessage] = useState('');
 
-  const fetchAllTimetables = async () => {
+  // Data for dropdowns
+  const [allCourses, setAllCourses] = useState([]);
+  const [allBatches, setAllBatches] = useState([]);
+  const [allSubjects, setAllSubjects] = useState([]);
+  const [allFaculty, setAllFaculty] = useState([]);
+  const [allClassrooms, setAllClassrooms] = useState([]);
+
+  // Timetable generation request states
+  const [selectedBatches, setSelectedBatches] = useState([]);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [selectedFaculty, setSelectedFaculty] = useState([]);
+  const [selectedClassrooms, setSelectedClassrooms] = useState([]);
+  const [maxClassesPerDay, setMaxClassesPerDay] = useState('');
+  // Fixed slots, leaves, electives can be added later as more complex inputs
+
+  // Generated timetable display states
+  const [generatedTimetable, setGeneratedTimetable] = useState(null);
+  const [timetableName, setTimetableName] = useState('');
+
+  const fetchAllDataForGeneration = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/timetables', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch timetables');
-      const data = await response.json();
-      setAllTimetables(data);
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const coursesResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/courses', { headers });
+      const coursesData = await coursesResponse.json();
+      setAllCourses(coursesData);
+
+      const batchesData = [];
+      for (const course of coursesData) {
+        const batchRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/courses/${course.id}/batches`, { headers });
+        if (batchRes.ok) { batchesData.push(...await batchRes.json()); }
+      }
+      setAllBatches(batchesData);
+
+      const subjectsResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/subjects', { headers });
+      setAllSubjects(await subjectsResponse.json());
+
+      const facultyResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/faculty', { headers });
+      setAllFaculty(await facultyResponse.json());
+
+      const classroomsResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/classrooms', { headers });
+      setAllClassrooms(await classroomsResponse.json());
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -61,257 +63,167 @@ function TimetablesPage() {
 
   useEffect(() => {
     if (currentUser && currentUser.role === 'admin') {
-      fetchAllTimetables();
+      fetchAllDataForGeneration();
     }
   }, [currentUser]);
 
-  const onDragEnd = (result) => {
-    const { destination, source, draggableId } = result;
+  const handleGenerateTimetable = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setMessage('');
+      setGeneratedTimetable(null);
 
-    if (!destination) {
-      return;
-    }
-
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
-
-    const start = columns[source.droppableId];
-    const finish = columns[destination.droppableId];
-
-    if (start === finish) {
-      const newItemIds = Array.from(start.itemIds);
-      newItemIds.splice(source.index, 1);
-      newItemIds.splice(destination.index, 0, draggableId);
-
-      const newColumn = {
-        ...start,
-        itemIds: newItemIds,
+      const token = localStorage.getItem('accessToken');
+      const requestBody = {
+        selected_batches: selectedBatches,
+        selected_subjects: selectedSubjects,
+        selected_faculty: selectedFaculty,
+        selected_classrooms: selectedClassrooms,
+        max_classes_per_day: maxClassesPerDay ? parseInt(maxClassesPerDay) : undefined,
+        // fixed_slots, leaves, electives can be added here
       };
-      setColumns({
-        ...columns,
-        [newColumn.id]: newColumn,
+
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/schedule/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(requestBody),
       });
-      return;
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to generate timetable');
+      }
+
+      const data = await response.json();
+      setGeneratedTimetable(data.timetable);
+      setMessage(data.message || 'Timetable generated successfully!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    // Moving from one list to another
-    const startItemIds = Array.from(start.itemIds);
-    startItemIds.splice(source.index, 1);
-    const newStart = {
-      ...start,
-      itemIds: startItemIds,
-    };
-
-    const finishItemIds = Array.from(finish.itemIds);
-    finishItemIds.splice(destination.index, 0, draggableId);
-    const newFinish = {
-      ...finish,
-      itemIds: finishItemIds,
-    };
-
-    setColumns({
-      ...columns,
-      [newStart.id]: newStart,
-      [newFinish.id]: newFinish,
-    });
   };
 
-  const handleSaveTimetable = async (e) => {
-    e.preventDefault();
+  const handleSaveGeneratedTimetable = async () => {
+    if (!generatedTimetable) {
+      setError('No timetable generated to save.');
+      return;
+    }
     if (!timetableName.trim()) {
-      setError('Timetable name cannot be empty.');
+      setError('Please provide a name for the timetable.');
       return;
     }
 
     try {
+      setLoading(true);
+      setError('');
+      setMessage('');
       const token = localStorage.getItem('accessToken');
       const timetableData = {
         name: timetableName,
-        data: { items, columns }, // Store the DND state
+        data: { timetable: generatedTimetable }, // Store the generated timetable
       };
 
-      let url = import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/timetables';
-      let method = 'POST';
-
-      if (selectedTimetableId) {
-        url = `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/timetables/${selectedTimetableId}`;
-        method = 'PUT';
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/admin/timetables', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(timetableData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to save timetable');
+        throw new Error(errorData.detail || 'Failed to save generated timetable');
       }
-      alert('Timetable saved successfully!');
-      setShowSaveModal(false);
+      setMessage('Generated timetable saved successfully!');
+      setGeneratedTimetable(null);
       setTimetableName('');
-      setSelectedTimetableId(null);
-      fetchAllTimetables(); // Refresh list of timetables
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleLoadTimetable = async (timetableId) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/timetables/${timetableId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Failed to load timetable');
-      const data = await response.json();
-
-      setItems(data.data.items);
-      setColumns(data.data.columns);
-      setTimetableName(data.name);
-      setSelectedTimetableId(data.id);
-      setShowLoadModal(false);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleDeleteTimetable = async (timetableId) => {
-    if (window.confirm('Are you sure you want to delete this timetable?')) {
-      try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/timetables/${timetableId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error('Failed to delete timetable');
-        alert('Timetable deleted successfully!');
-        fetchAllTimetables(); // Refresh list
-      } catch (err) {
-        setError(err.message);
-      }
-    }
-  };
-
-  const handleNewTimetable = () => {
-    setItems(initialItems);
-    setColumns(initialColumns);
-    setTimetableName('');
-    setSelectedTimetableId(null);
-  };
-
-  if (loading) return <div className="timetables-container">Loading...</div>;
+  if (loading) return <div className="timetables-container">Loading Timetable Generator...</div>;
   if (error) return <div className="timetables-container error">Error: {error}</div>;
 
   return (
     <div className="timetables-container">
-      <h2>Manage Timetables</h2>
-      {error && <div className="error">Error: {error}</div>}
+      <h1>AI Timetable Generator</h1>
+      {error && <div className="error">{error}</div>}
+      {message && <div className="success">{message}</div>}
 
-      {currentUser && currentUser.role === 'admin' && (
-        <div className="timetable-actions">
-          <button onClick={() => setShowSaveModal(true)}>Save Timetable</button>
-          <button onClick={() => setShowLoadModal(true)}>Load Timetable</button>
-          <button onClick={handleNewTimetable}>New Timetable</button>
+      <section className="generation-controls">
+        <h2>Select Constraints</h2>
+        <div className="control-group">
+          <label>Batches:</label>
+          <select multiple value={selectedBatches} onChange={e => setSelectedBatches(Array.from(e.target.selectedOptions, option => option.value))}>
+            {allBatches.map(batch => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
+          </select>
         </div>
+        <div className="control-group">
+          <label>Subjects:</label>
+          <select multiple value={selectedSubjects} onChange={e => setSelectedSubjects(Array.from(e.target.selectedOptions, option => option.value))}>
+            {allSubjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
+          </select>
+        </div>
+        <div className="control-group">
+          <label>Faculty:</label>
+          <select multiple value={selectedFaculty} onChange={e => setSelectedFaculty(Array.from(e.target.selectedOptions, option => option.value))}>
+            {allFaculty.map(facultyMember => <option key={facultyMember.id} value={facultyMember.id}>{facultyMember.name}</option>)}
+          </select>
+        </div>
+        <div className="control-group">
+          <label>Classrooms:</label>
+          <select multiple value={selectedClassrooms} onChange={e => setSelectedClassrooms(Array.from(e.target.selectedOptions, option => option.value))}>
+            {allClassrooms.map(classroom => <option key={classroom.id} value={classroom.id}>{classroom.name}</option>)}
+          </select>
+        </div>
+        <div className="control-group">
+          <label>Max Classes Per Day (Optional):</label>
+          <input type="number" value={maxClassesPerDay} onChange={e => setMaxClassesPerDay(e.target.value)} placeholder="e.g., 5" />
+        </div>
+        <button onClick={handleGenerateTimetable} disabled={selectedBatches.length === 0 || selectedSubjects.length === 0}>Generate Timetable</button>
+      </section>
+
+      {generatedTimetable && (
+        <section className="generated-timetable-display">
+          <h2>Generated Timetable</h2>
+          <div className="timetable-preview">
+            {generatedTimetable.length === 0 ? (
+              <p>No timetable could be generated with the given constraints.</p>
+            ) : (
+              <table className="generated-timetable-table">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Faculty</th>
+                    <th>Classroom</th>
+                    <th>Time Slot</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {generatedTimetable.map((item, index) => (
+                    <tr key={index}>
+                      <td>{item.subject}</td>
+                      <td>{item.batch}</td>
+                      <td>{item.faculty}</td>
+                      <td>{item.classroom}</td>
+                      <td>{item.time_slot}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <div className="save-timetable-section">
+            <input type="text" value={timetableName} onChange={e => setTimetableName(e.target.value)} placeholder="Name this timetable to save" />
+            <button onClick={handleSaveGeneratedTimetable} disabled={!timetableName.trim()}>Save Generated Timetable</button>
+          </div>
+        </section>
       )}
-
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="dnd-container">
-          {Object.values(columns).map((column) => (
-            <Droppable droppableId={column.id} key={column.id}>
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  className="column"
-                  style={{
-                    background: snapshot.isDraggingOver ? 'lightblue' : 'lightgrey',
-                  }}
-                  {...provided.droppableProps}
-                >
-                  <h3>{column.title}</h3>
-                  {column.itemIds.map((itemId, index) => {
-                    const item = items.find((i) => i.id === itemId);
-                    if (!item) return null; // Handle case where item might not be found
-                    return (
-                      <Draggable key={item.id} draggableId={item.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="item"
-                            style={{
-                              backgroundColor: snapshot.isDragging ? '#263B4A' : '#456C86',
-                              ...provided.draggableProps.style,
-                            }}
-                          >
-                            {item.content}
-                          </div>
-                        )}
-                      </Draggable>
-                    );
-                  })}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          ))}
-        </div>
-      </DragDropContext>
-
-      {/* Save Timetable Modal */}
-      <Modal show={showSaveModal} onClose={() => setShowSaveModal(false)}>
-        <form onSubmit={handleSaveTimetable}>
-          <h3>{selectedTimetableId ? 'Update' : 'Save'} Timetable</h3>
-          {error && <div className="error">Error: {error}</div>}
-          <input
-            type="text"
-            value={timetableName}
-            onChange={e => setTimetableName(e.target.value)}
-            placeholder="Timetable Name"
-            required
-          />
-          <button type="submit">{selectedTimetableId ? 'Update' : 'Save'}</button>
-        </form>
-      </Modal>
-
-      {/* Load Timetable Modal */}
-      <Modal show={showLoadModal} onClose={() => setShowLoadModal(false)}>
-        <h3>Load Timetable</h3>
-        {error && <div className="error">Error: {error}</div>}
-        {allTimetables.length === 0 ? (
-          <p>No saved timetables.</p>
-        ) : (
-          <table className="timetable-list-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allTimetables.map(tt => (
-                <tr key={tt.id}>
-                  <td>{tt.name}</td>
-                  <td>
-                    <button onClick={() => handleLoadTimetable(tt.id)}>Load</button>
-                    <button onClick={() => handleDeleteTimetable(tt.id)} className="delete-btn">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Modal>
     </div>
   );
 }

@@ -188,6 +188,35 @@ function ClassroomsPage() {
     }
   };
 
+  const handleDownloadSeatingPlanPdf = async () => {
+    try {
+      setError('');
+      setMessage('');
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/classrooms/${classroomForSeatingPlan.id}/seating-plan/${selectedBatchForSeating}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to download seating plan PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `seating_plan_${classroomForSeatingPlan.name}_${selectedBatchForSeating}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setMessage('Seating plan PDF downloaded successfully!');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <div className="classrooms-container">Loading...</div>;
 
   return (
@@ -265,6 +294,7 @@ function ClassroomsPage() {
                 </div>
               ))}
             </div>
+            <button onClick={handleDownloadSeatingPlanPdf}>Download PDF</button>
           </div>
         )}
       </Modal>

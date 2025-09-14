@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
 from typing import Optional, List
+from weasyprint import HTML
+from io import BytesIO
+import json
 
 from app.schemas.user import UserInDB, UserUpdate, Feedback
-from app.schemas.admin import Timetable, Elective, CulturalSession
-from app.core.dependencies import get_current_user, get_current_admin_user
+from app.schemas.admin import Timetable, Elective, CulturalSession, SeatingPlan, FeedbackSettings
+from app.core.dependencies import get_current_user, get_current_admin_user, get_db
 from app.schemas.auth import TokenData
 from app.services.firebase import db, bucket
 from app.services.email_service import send_email
@@ -109,6 +112,132 @@ async def get_my_timetable(current_user: TokenData = Depends(get_current_user)):
                 timetables.append(Timetable(id=tt_doc.id, **tt_data))
     
     return timetables
+
+@router.get("/me/timetable/download", response_class=Response)
+async def download_my_timetable(current_user: TokenData = Depends(get_current_user)):
+    user_doc = db.collection('users').document(current_user.email).get()
+    if not user_doc.exists:
+        raise HTTPException(status_code=404, detail="User not found")
+    user_data = user_doc.to_dict()
+
+    timetables = []
+    all_timetables_stream = db.collection('timetables').stream()
+
+    for tt_doc in all_timetables_stream:
+        tt_data = tt_doc.to_dict()
+        scheduled_classes = tt_data.get('data', {}).get('timetable', [])
+
+        if user_data.get("role") == "faculty" and user_data.get("faculty_id"):
+            if any(cls.get('faculty_id') == user_data['faculty_id'] for cls in scheduled_classes):
+                timetables.append(Timetable(id=tt_doc.id, **tt_data))
+        elif user_data.get("role") == "student" and user_data.get("batch"):
+            if any(cls.get('batch_id') == user_data['batch'] for cls in scheduled_classes):
+                timetables.append(Timetable(id=tt_doc.id, **tt_data))
+    
+    if not timetables:
+        raise HTTPException(status_code=404, detail="No timetable found for this user.")
+
+    # For simplicity, taking the first found timetable. Adjust as needed.
+    timetable_to_download = timetables[0]
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>My Timetable - {current_user.email}</title>
+        <style>
+            body {{ font-family: sans-serif; margin: 20px; }}
+            h1 {{ color: #333; text-align: center; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+            th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+            th {{ background-color: #f2f2f2; }}
+        </style>
+    </head>
+    <body>
+        <h1>My Timetable</h1>
+        <h2>User: {current_user.email} ({current_user.role})</h2>
+        <h3>Timetable Name: {timetable_to_download.name}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Batch</th>
+                    <th>Faculty</th>
+                    <th>Classroom</th>
+                    <th>Time Slot</th>
+                </tr>
+            </thead>
+            <tbody>
+                {''.join([f'<tr><td>{item.get("subject", "")}</td><td>{item.get("batch", "")}</td><td>{item.get("faculty", "")}</td><td>{item.get("classroom", "")}</td><td>{item.get("time_slot", "")}</td></tr>' for item in timetable_to_download.data.get('timetable', [])])}
+            </tbody>
+        </table>
+    </body>
+    </html>
+    """
+
+    pdf_file = BytesIO()
+    HTML(string=html_content).write_pdf(pdf_file)
+    pdf_file.seek(0)
+
+    return Response(
+        content=pdf_file.getvalue(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=\"my_timetable_{current_user.email}.pdf\""}
+    )
+
+@router.get("/me/seating-plan/download", response_class=Response)
+async def download_my_seating_plan(current_user: TokenData = Depends(get_current_user), db: firestore.Client = Depends(get_db)):
+    user_doc = db.collection('users').document(current_user.email).get()
+    if not user_doc.exists:
+        raise HTTPException(status_code=404, detail="User not found")
+    user_data = user_doc.to_dict()
+
+    classroom_id = user_data.get('classroom_id')
+    batch_id = user_data.get('batch_id')
+
+    if not classroom_id or not batch_id:
+        raise HTTPException(status_code=404, detail="Seating plan not assigned to this user.")
+
+    seating_plan_doc_ref = db.collection('seating_plans').document(f"{classroom_id}_{batch_id}")
+    seating_plan_doc = seating_plan_doc_ref.get()
+
+    if not seating_plan_doc.exists:
+        raise HTTPException(status_code=404, detail="Seating plan not found for your assigned classroom and batch.")
+    
+    seating_plan_data = SeatingPlan(**seating_plan_doc.to_dict())
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>My Seating Plan - {current_user.email}</title>
+        <style>
+            body {{ font-family: sans-serif; margin: 20px; }}
+            h1 {{ color: #333; text-align: center; margin-bottom: 20px; }}
+            .seating-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; width: 100%; max-width: 800px; margin: 0 auto; border: 1px solid #ccc; padding: 10px; }}
+            .seat-item {{ border: 1px solid #ddd; padding: 10px; text-align: center; background-color: #f9f9f9; }}
+            .seat-item strong {{ display: block; font-size: 1.2em; }}
+        </style>
+    </head>
+    <body>
+        <h1>Seating Plan for {current_user.email}</h1>
+        <h2>Classroom: {classroom_id} | Batch: {batch_id}</h2>
+        <div class="seating-grid">
+            {''.join([f'<div class="seat-item"><strong>{seat}</strong><span>{email}</span></div>' for seat, email in seating_plan_data.plan.items()])}
+        </div>
+    </body>
+    </html>
+    """
+
+    pdf_file = BytesIO()
+    HTML(string=html_content).write_pdf(pdf_file)
+    pdf_file.seek(0)
+
+    return Response(
+        content=pdf_file.getvalue(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=\"my_seating_plan_{current_user.email}.pdf\""}
+    )
 
 @router.get("/timetable/{timetable_id}", response_model=Timetable)
 async def get_specific_timetable(timetable_id: str, current_user: TokenData = Depends(get_current_user)):

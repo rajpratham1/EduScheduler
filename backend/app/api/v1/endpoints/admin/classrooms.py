@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import List, Dict
+from weasyprint import HTML
+from io import BytesIO
 
 from app.schemas.admin import Classroom, SeatingPlanRequest, SeatingPlan
-from app.core.dependencies import get_current_admin_user
+from app.core.dependencies import get_db, get_current_admin_user
 from app.services.firebase import db
 
 router = APIRouter()
@@ -84,3 +86,51 @@ async def generate_seating_plan(
     seating_plan_doc_ref.set(seating_plan_obj.dict())
     
     return seating_plan_obj
+
+@router.get("/{classroom_id}/seating-plan/{batch_id}/download", response_class=Response)
+async def download_seating_plan(
+    classroom_id: str,
+    batch_id: str,
+    db: firestore.Client = Depends(get_db),
+    _: dict = Depends(get_current_admin_user)
+):
+    seating_plan_doc_ref = db.collection('seating_plans').document(f"{classroom_id}_{batch_id}")
+    seating_plan_doc = seating_plan_doc_ref.get()
+
+    if not seating_plan_doc.exists:
+        raise HTTPException(status_code=404, detail="Seating plan not found.")
+
+    seating_plan_data = SeatingPlan(**seating_plan_doc.to_dict())
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Seating Plan - {classroom_id} ({batch_id})</title>
+        <style>
+            body {{ font-family: sans-serif; margin: 20px; }}
+            h1 {{ color: #333; text-align: center; margin-bottom: 20px; }}
+            .seating-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; width: 100%; max-width: 800px; margin: 0 auto; border: 1px solid #ccc; padding: 10px; }}
+            .seat-item {{ border: 1px solid #ddd; padding: 10px; text-align: center; background-color: #f9f9f9; }}
+            .seat-item strong {{ display: block; font-size: 1.2em; }}
+        </style>
+    </head>
+    <body>
+        <h1>Seating Plan for {classroom_id}</h1>
+        <h2>Batch: {batch_id}</h2>
+        <div class="seating-grid">
+            {''.join([f'<div class="seat-item"><strong>{seat}</strong><span>{email}</span></div>' for seat, email in seating_plan_data.plan.items()])}
+        </div>
+    </body>
+    </html>
+    """
+
+    pdf_file = BytesIO()
+    HTML(string=html_content).write_pdf(pdf_file)
+    pdf_file.seek(0)
+
+    return Response(
+        content=pdf_file.getvalue(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=\"seating_plan_{classroom_id}_{batch_id}.pdf\""}
+    )

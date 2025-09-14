@@ -6,42 +6,61 @@ from app.core.dependencies import get_current_admin_user
 from app.scheduling_engine.solver import TimetableSolver
 from app.services.firebase import db
 from app.services.gemini_api import generate_timetable_with_gemini
+from app.schemas.admin import TimetableGenerationRequest # Import the new schema
 
 router = APIRouter()
 
 @router.post("/generate")
-async def generate_timetable(constraints: Dict[str, Any], _: dict = Depends(get_current_admin_user)):
-    # Fetch necessary data from Firestore
-    faculty_data = [doc.to_dict() for doc in db.collection('faculty').stream()]
-    subjects_data = [doc.to_dict() for doc in db.collection('subjects').stream()]
-    classrooms_data = [doc.to_dict() for doc in db.collection('classrooms').stream()]
-    # Assuming batches can be derived from students data or provided separately
-    # For now, let's create dummy batches based on students' batches
-    students_data = [doc.to_dict() for doc in db.collection('users').where('role', '==', 'student').stream()]
-    batches_set = set(s.get('batch') for s in students_data if s.get('batch'))
-    batches_data = [{'id': b, 'name': b} for b in batches_set]
+async def generate_timetable(request: TimetableGenerationRequest, _: dict = Depends(get_current_admin_user)):
+    # Fetch all necessary data from Firestore
+    all_faculty_data = [doc.to_dict() for doc in db.collection('faculty').stream()]
+    all_subjects_data = [doc.to_dict() for doc in db.collection('subjects').stream()]
+    all_classrooms_data = [doc.to_dict() for doc in db.collection('classrooms').stream()]
+    all_batches_data = []
+    # Fetch all batches from all courses
+    courses_stream = db.collection('courses').stream()
+    for course_doc in courses_stream:
+        batches_stream = db.collection('courses').document(course_doc.id).collection('batches').stream()
+        for batch_doc in batches_stream:
+            all_batches_data.append(batch_doc.to_dict())
 
-    # Example courses to schedule (this would come from admin input/configuration)
-    courses_to_schedule = [
-        {"subject_id": "math101", "batch_id": "batchA", "duration": 1, "required_faculty_id": None, "is_lab": False, "num_classes": 2},
-        {"subject_id": "phy201", "batch_id": "batchA", "duration": 1, "required_faculty_id": "fac1", "is_lab": True, "num_classes": 1},
-    ]
+    # Filter data based on request
+    faculty_data = [f for f in all_faculty_data if f.get('id') in request.selected_faculty]
+    subjects_data = [s for s in all_subjects_data if s.get('id') in request.selected_subjects]
+    classrooms_data = [c for c in all_classrooms_data if c.get('id') in request.selected_classrooms]
+    batches_data = [b for b in all_batches_data if b.get('id') in request.selected_batches]
 
-    # Example time slots (this would come from admin input/configuration)
-    time_slots = [
-        "Mon_9-10", "Mon_10-11", "Mon_11-12",
-        "Tue_9-10", "Tue_10-11", "Tue_11-12",
-        "Wed_9-10", "Wed_10-11", "Wed_11-12",
-        "Thu_9-10", "Thu_10-11", "Thu_11-12",
-        "Fri_9-10", "Fri_10-11", "Fri_11-12",
-    ]
+    # Generate courses to schedule based on selected subjects and batches
+    # This is a simplified assumption: each selected subject needs to be scheduled for each selected batch
+    courses_to_schedule = []
+    for batch_id in request.selected_batches:
+        for subject_id in request.selected_subjects:
+            # Assuming 1 class per subject per batch for simplicity, duration 1 hour
+            courses_to_schedule.append({
+                "subject_id": subject_id,
+                "batch_id": batch_id,
+                "duration": 1,
+                "num_classes": 1 # Can be made configurable
+            })
+
+    # Generate time slots (e.g., Mon-Fri, 9 AM - 5 PM)
+    time_slots = []
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    hours = ["09-10", "10-11", "11-12", "13-14", "14-15", "15-16"]
+    for day in days:
+        for hour in hours:
+            time_slots.append(f"{day}_{hour}")
+
+    # Apply fixed slots and leaves (basic implementation)
+    # This part needs more sophisticated handling in TimetableSolver
+    # For now, just pass them as constraints to Gemini if CSP fails
 
     # Try to solve with CSP first
     solver = TimetableSolver(faculty_data, subjects_data, classrooms_data, batches_data, courses_to_schedule, time_slots)
     csp_solution = solver.solve()
 
     if csp_solution is not None:
-        return solver.get_solution()
+        return {"message": "Timetable generated with CSP", "timetable": solver.get_solution()}
     else:
         # If CSP fails, or for optimization, use Gemini API
         gemini_prompt = f"""Generate a college timetable based on the following data and constraints.
@@ -54,7 +73,7 @@ async def generate_timetable(constraints: Dict[str, Any], _: dict = Depends(get_
         Batches: {json.dumps(batches_data)}
         Courses to Schedule: {json.dumps(courses_to_schedule)}
         Available Time Slots: {json.dumps(time_slots)}
-        Additional Constraints: {json.dumps(constraints)}
+        Additional Constraints: {json.dumps(request.dict())}
         """
 
         try:

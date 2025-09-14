@@ -69,6 +69,57 @@ function StudentDashboard() {
     fetchStudentData();
   }, []);
 
+  const handleDownloadTimetablePdf = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me/timetable/download', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to download timetable PDF');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `my_timetable_${studentData.email}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDownloadSeatingPlanPdf = async () => {
+    try {
+      if (!studentData.classroom_id || !studentData.batch_id) {
+        throw new Error('Seating plan not assigned.');
+      }
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/me/seating-plan/download?classroom_id=${studentData.classroom_id}&batch_id=${studentData.batch_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to download seating plan PDF');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `my_seating_plan_${studentData.email}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <div className="student-dashboard-container">Loading Student Dashboard...</div>;
   if (error) return <div className="student-dashboard-container error">Error: {error}</div>;
   if (!studentData) return <div className="student-dashboard-container">No student data found.</div>;
@@ -98,6 +149,7 @@ function StudentDashboard() {
                 </div>
               ))}
             </div>
+            <button onClick={handleDownloadSeatingPlanPdf}>Download Seating Plan PDF</button>
           </div>
         )}
       </section>
@@ -117,6 +169,7 @@ function StudentDashboard() {
                 </div>
               ))}
             </div>
+            <button onClick={handleDownloadTimetablePdf}>Download Timetable PDF</button>
           </div>
         ) : (
           <p>Timetable not yet available.</p>

@@ -8,6 +8,7 @@ function FacultyDashboard() {
   const [assignments, setAssignments] = useState([]);
   const [feedbackLink, setFeedbackLink] = useState('');
   const [seatingPlans, setSeatingPlans] = useState({}); // { 'classroom_batch_id': plan_data }
+  const [timetable, setTimetable] = useState(null); // State for faculty's timetable
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -60,6 +61,17 @@ function FacultyDashboard() {
       }
       setSeatingPlans(fetchedSeatingPlans);
 
+      // Fetch faculty's timetable
+      const timetableResponse = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me/timetable', { headers });
+      if (timetableResponse.ok) {
+        const timetableData = await timetableResponse.json();
+        if (timetableData.length > 0) {
+          setTimetable(timetableData[0].data.timetable); // Assuming data.timetable holds the actual schedule array
+        }
+      } else {
+        console.warn('Failed to fetch timetable.');
+      }
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,6 +82,54 @@ function FacultyDashboard() {
   useEffect(() => {
     fetchFacultyData();
   }, []);
+
+  const handleDownloadTimetablePdf = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me/timetable/download', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to download timetable PDF');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `my_timetable_${facultyData.email}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDownloadSeatingPlanPdf = async (classroom_id, batch_id) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/me/seating-plan/download?classroom_id=${classroom_id}&batch_id=${batch_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to download seating plan PDF');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `seating_plan_${classroom_id}_${batch_id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   if (loading) return <div className="faculty-dashboard-container">Loading Faculty Dashboard...</div>;
   if (error) return <div className="faculty-dashboard-container error">Error: {error}</div>;
@@ -82,7 +142,29 @@ function FacultyDashboard() {
       {facultyData.department && <p>Department: {facultyData.department}</p>}
 
       <section className="section-card">
-        <h2>Your Assigned Classes</h2>
+        <h2>Your Timetable</h2>
+        {timetable ? (
+          <div className="timetable-display">
+            <h4>Current Schedule:</h4>
+            <div className="timetable-grid">
+              {timetable.map((item, index) => (
+                <div key={index} className="timetable-item">
+                  <p><strong>Subject:</strong> {item.subject}</p>
+                  <p><strong>Faculty:</strong> {item.faculty}</p>
+                  <p><strong>Classroom:</strong> {item.classroom}</p>
+                  <p><strong>Time:</strong> {item.time_slot}</p>
+                </div>
+              ))}
+            </div>
+            <button onClick={handleDownloadTimetablePdf}>Download Timetable PDF</button>
+          </div>
+        ) : (
+          <p>Timetable not yet available.</p>
+        )}
+      </section>
+
+      <section className="section-card">
+        <h2>Your Assigned Classes & Seating Plans</h2>
         {assignments.length === 0 ? (
           <p>No classes assigned yet.</p>
         ) : (
@@ -104,6 +186,7 @@ function FacultyDashboard() {
                         </div>
                       ))}
                     </div>
+                    <button onClick={() => handleDownloadSeatingPlanPdf(assign.classroom_id, assign.batch_id)}>Download Seating Plan PDF</button>
                   </div>
                 )}
               </div>
