@@ -47,3 +47,15 @@ class Timetable(BaseModel):
     id: Optional[str] = None
     name: str
     data: dict
+
+class Course(BaseModel):
+    id: Optional[str] = None
+    name: str
+    code: str
+    description: Optional[str] = None
+
+class Batch(BaseModel):
+    id: Optional[str] = None
+    name: str # e.g., "2024-2028"
+    course_id: str
+    year: Optional[int] = None # e.g., 1, 2, 3, 4

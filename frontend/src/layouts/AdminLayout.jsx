@@ -6,10 +6,12 @@ function AdminLayout() {
     <div>
       <nav>
         <ul>
+          <li><Link to="/dashboard/admin/users">User Approvals</Link></li>
           <li><Link to="/dashboard/admin/faculty">Manage Faculty</Link></li>
           <li><Link to="/dashboard/admin/students">Manage Students</Link></li>
+          <li><Link to="/dashboard/admin/courses">Manage Courses</Link></li>
           <li><Link to="/dashboard/admin/subjects">Manage Subjects</Link></li>
-          <li><Link to="/dashboard/admin/classrooms">Manage Classrooms</Link></li>
+          <li><Lto="/dashboard/admin/classrooms">Manage Classrooms</Link></li>
           <li><Link to="/dashboard/admin/timetables">Manage Timetables</Link></li>
         </ul>
       </nav>

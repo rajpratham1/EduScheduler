@@ -14,6 +14,7 @@ import SubjectsPage from 'src/pages/admin/SubjectsPage';
 import ClassroomsPage from 'src/pages/admin/ClassroomsPage';
 import TimetablesPage from 'src/pages/admin/TimetablesPage';
 import UserManagementPage from 'src/pages/admin/UserManagementPage';
+import CoursesPage from 'src/pages/admin/CoursesPage'; // Import the new page
 import ElectivesPage from 'src/pages/ElectivesPage';
 import CulturalSessionsPage from 'src/pages/CulturalSessionsPage';
 import PendingApprovalPage from 'src/pages/PendingApprovalPage';
@@ -57,6 +58,7 @@ function App() {
               <Route path="students" element={<StudentsPage />} />
               <Route path="subjects" element={<SubjectsPage />} />
               <Route path="classrooms" element={<ClassroomsPage />} />
+              <Route path="courses" element={<CoursesPage />} />
               <Route path="timetables" element={<TimetablesPage />} />
               <Route path="users" element={<UserManagementPage />} />
             </Route>

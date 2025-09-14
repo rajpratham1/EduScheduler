@@ -37,3 +37,7 @@ class UserInDB(UserBase):
 
     class Config:
         from_attributes = True
+
+class StudentEnrollmentRequest(BaseModel):
+    course_id: str
+    batch_id: str

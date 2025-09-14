@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints.admin import faculty, students, subjects, classrooms, timetables, schedule, users, electives, cultural_sessions
+from app.api.v1.endpoints.admin import faculty, students, subjects, classrooms, timetables, schedule, users, electives, cultural_sessions, courses
 
 router = APIRouter()
 
+router.include_router(courses.router, prefix="/courses", tags=["admin-courses"])
 router.include_router(faculty.router, prefix="/faculty", tags=["admin-faculty"])
 router.include_router(students.router, prefix="/students", tags=["admin-students"])
 router.include_router(subjects.router, prefix="/subjects", tags=["admin-subjects"])

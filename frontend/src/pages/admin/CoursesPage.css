@@ -1,0 +1,74 @@
+.courses-container {
+    padding: 20px;
+}
+
+.page-title {
+    color: var(--text-color);
+}
+
+.course-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.course-table th, .course-table td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: left;
+}
+
+.course-table th {
+    background-color: var(--secondary-bg-color);
+}
+
+.edit-btn, .delete-btn {
+    margin-right: 5px;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.edit-btn {
+    background-color: #ffc107;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.add-batch-btn {
+    background-color: #28a745;
+    color: white;
+    margin-left: 5px;
+}
+
+.batches-list {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: var(--primary-bg-color);
+    border-radius: 8px;
+}
+
+.batches-list h4 {
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.batch-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.batch-table th, .batch-table td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: left;
+}
+
+.batch-table th {
+    background-color: var(--secondary-bg-color);
+}
