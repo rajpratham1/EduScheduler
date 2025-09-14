@@ -14,17 +14,35 @@ router = APIRouter()
 @router.get("/me", response_model=UserInDB)
 async def read_users_me(current_user: TokenData = Depends(get_current_user)):
     user_ref = db.collection('users').document(current_user.email)
-    user = user_ref.get()
-    if not user.exists:
-        # Create user if not exists
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        # Create user if not exists (should ideally be handled during login)
         user_data = {
             "email": current_user.email,
             "role": current_user.role,
         }
         db.collection('users').document(current_user.email).set(user_data)
-        user = user_ref.get()
+        user_doc = user_ref.get()
 
-    return UserInDB(id=user.id, **user.to_dict())
+    user_data = user_doc.to_dict()
+
+    # If the user is a faculty, enrich with data from the 'faculty' collection
+    if user_data.get("role") == "faculty":
+        faculty_id = user_data.get("faculty_id")
+        if faculty_id:
+            faculty_doc = db.collection('faculty').document(faculty_id).get()
+            if faculty_doc.exists:
+                faculty_data = faculty_doc.to_dict()
+                # Merge faculty-specific data into user_data
+                user_data.update({
+                    "name": faculty_data.get("name"),
+                    "department": faculty_data.get("department"),
+                    # Add other faculty-specific fields as needed
+                })
+
+    return UserInDB(id=user_doc.id, **user_data)
+
 
 @router.put("/me", response_model=UserInDB)
 async def update_users_me(user_update: UserUpdate, current_user: TokenData = Depends(get_current_user)):
@@ -160,3 +178,51 @@ async def participate_cultural_session(session_id: str, current_user: TokenData 
     session_ref.update({"participants": participants})
 
     return {"message": "Successfully joined cultural session."}
+
+@router.get("/feedback-link", response_model=FeedbackSettings)
+async def get_public_feedback_link():
+    settings_ref = db.collection('settings').document("feedback_form")
+    settings_doc = settings_ref.get()
+    if not settings_doc.exists:
+        return FeedbackSettings(google_form_link="") # Return empty if not set
+    return FeedbackSettings(**settings_doc.to_dict())
+
+@router.get("/seating-plan/{classroom_id}/{batch_id}", response_model=SeatingPlan)
+async def get_seating_plan(
+    classroom_id: str,
+    batch_id: str,
+    current_user: TokenData = Depends(get_current_user)
+):
+    # Verify user is authorized to view this seating plan
+    # For faculty: check if they are assigned to a class in this classroom/batch
+    # For students: check if they belong to this batch and classroom
+
+    seating_plan_doc_ref = db.collection('seating_plans').document(f"{classroom_id}_{batch_id}")
+    seating_plan_doc = seating_plan_doc_ref.get()
+
+    if not seating_plan_doc.exists:
+        raise HTTPException(status_code=404, detail="Seating plan not found for this classroom and batch.")
+    
+    seating_plan_data = SeatingPlan(**seating_plan_doc.to_dict())
+
+    # Basic authorization check
+    if current_user.role == "student":
+        user_doc = db.collection('users').document(current_user.email).get()
+        if not user_doc.exists or user_doc.to_dict().get('batch_id') != batch_id or user_doc.to_dict().get('classroom_id') != classroom_id:
+            raise HTTPException(status_code=403, detail="Not authorized to view this seating plan.")
+    elif current_user.role == "faculty":
+        # More complex check: iterate through assignments to see if faculty teaches this batch in this classroom
+        assignments_ref = db.collection('assignments').where('faculty_id', '==', current_user.email) # Assuming faculty email is their ID
+        assignments_stream = assignments_ref.stream()
+        authorized = False
+        for assignment in assignments_stream:
+            assign_data = assignment.to_dict()
+            if assign_data.get('batch_id') == batch_id and assign_data.get('classroom_id') == classroom_id:
+                authorized = True
+                break
+        if not authorized:
+            raise HTTPException(status_code=403, detail="Not authorized to view this seating plan.")
+    elif current_user.role != "admin": # Admin can view all
+        raise HTTPException(status_code=403, detail="Not authorized to view this seating plan.")
+
+    return seating_plan_data

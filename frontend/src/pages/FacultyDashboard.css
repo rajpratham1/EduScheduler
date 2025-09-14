@@ -1,0 +1,85 @@
+.faculty-dashboard-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.faculty-dashboard-container h1, .faculty-dashboard-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.faculty-info p {
+    margin-bottom: 10px;
+}
+
+.section-card {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-card h3 {
+    margin-top: 0;
+    color: #555;
+}
+
+.assignment-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.seating-plan-display {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+}
+
+.seating-plan-display h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+.seating-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.seat-item {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #495057;
+}
+
+.seat-item strong {
+    display: block;
+    font-size: 1.1em;
+    margin-bottom: 3px;
+}
+
+.feedback-link-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.feedback-link-btn:hover {
+    background-color: #218838;
+}
