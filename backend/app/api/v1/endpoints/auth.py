@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.post("/login/google", response_model=Token)
 async def login_google(request: GoogleLoginRequest, db: firestore.Client = Depends(get_db)):
+    print("--- RUNNING NEW AUTH CODE V2 ---")
     try:
         decoded_token = auth.verify_id_token(request.token)
         email = decoded_token.get("email")
@@ -20,20 +21,22 @@ async def login_google(request: GoogleLoginRequest, db: firestore.Client = Depen
         user_doc = user_ref.get()
 
         if not user_doc.exists:
-            # New user, create document with default role and unapproved status
+            # New user, create document with default role and approve automatically
             user_data = {
                 "email": email,
                 "role": "student", # Default role for new sign-ups
-                "is_approved": False,
+                "is_approved": True, # Auto-approve new users
                 "display_name": decoded_token.get("name"),
                 "photo_url": decoded_token.get("picture"),
             }
             user_ref.set(user_data)
-            raise HTTPException(status_code=403, detail="Account pending approval. Please contact an administrator.")
+            user_role = user_data.get("role") # Get role from the data we just prepared
         else:
+            # Existing user, check if they are approved
             user_data = user_doc.to_dict()
             if not user_data.get("is_approved", False):
-                raise HTTPException(status_code=403, detail="Account pending approval. Please contact an administrator.")
+                # This can still catch manually un-approved users
+                raise HTTPException(status_code=403, detail="Account is not approved. Please contact an administrator.")
             user_role = user_data.get("role")
 
         # Create access token
