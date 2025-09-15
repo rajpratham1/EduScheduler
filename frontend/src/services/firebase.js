@@ -1,5 +1,4 @@
 // Import the functions you need from the SDKs you need
-console.log(import.meta.env);
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics"; // Added this import
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
