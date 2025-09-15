@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from typing import List, Dict
 from weasyprint import HTML
 from io import BytesIO
+from firebase_admin import firestore
 
 from app.schemas.admin import Classroom, SeatingPlanRequest, SeatingPlan
 from app.core.dependencies import get_db, get_current_admin_user

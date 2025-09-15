@@ -37,7 +37,7 @@ async def update_course(course_id: str, course_update: Course, _: dict = Depends
     course_ref = db.collection('courses').document(course_id)
     course_ref.set(course_update.dict(), merge=True)
     course = course_ref.get()
-    return Course(**course.to_ict())
+    return Course(**course.to_dict())
 
 @router.delete("/{course_id}", response_model=dict)
 async def delete_course(course_id: str, _: dict = Depends(get_current_admin_user)):
