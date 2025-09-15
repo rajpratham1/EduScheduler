@@ -11,6 +11,7 @@ from app.schemas.auth import TokenData
 from app.services.firebase import db, bucket
 from app.services.email_service import send_email
 from app.core.config import settings
+from firebase_admin import firestore
 
 router = APIRouter()
 
