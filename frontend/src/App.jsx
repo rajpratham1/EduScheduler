@@ -39,7 +39,6 @@ function App() {
           Switch to {theme === 'light' ? 'Dark' : 'Light'} Theme
         </button>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
           <Route path="/pending-approval" element={<PendingApprovalPage />} />
           <Route 
             path="/dashboard" 
