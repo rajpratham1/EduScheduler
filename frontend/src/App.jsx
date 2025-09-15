@@ -19,7 +19,7 @@ import FeedbackSettingsPage from 'src/pages/admin/FeedbackSettingsPage'; // Impo
 import ElectivesPage from 'src/pages/ElectivesPage';
 import CulturalSessionsPage from 'src/pages/CulturalSessionsPage';
 import PendingApprovalPage from 'src/pages/PendingApprovalPage';
-import AdminDashboard from 'src/pages/AdminDashboard'; // Import AdminDashboard
+import './App.css';
 
 function App() {
   const [theme, setTheme] = useState('light'); // Default theme is light

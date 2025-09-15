@@ -8,6 +8,7 @@ print(f"DEBUG: Loaded .env file in main.py. ADMIN_EMAIL: {os.getenv("ADMIN_EMAIL
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request # Import Request
 
 from app.services.firebase import initialize_firebase
 from app.api.v1.endpoints import auth, users
@@ -28,7 +29,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
