@@ -12,7 +12,7 @@ function RoleBasedDashboard() {
   useEffect(() => {
     const fetchUserRole = async () => {
       const token = localStorage.getItem('accessToken');
-            const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/users/me', {
+            const response = await fetch('https://eduscheduler-m5jz.onrender.com/api/v1/users/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();

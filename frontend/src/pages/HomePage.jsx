@@ -1,86 +1,165 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './HomePage.css';
-
-const FeatureCard = ({ icon, title, description }) => (
-  <div className="feature-card">
-    <div className="card-icon">{icon}</div>
-    <h3 className="card-title">{title}</h3>
-    <p className="card-description">{description}</p>
-  </div>
-);
-
-const InfoSection = ({ title, children }) => (
-  <section className="info-section">
-    <h2 className="section-title">{title}</h2>
-    <div className="section-content">
-      {children}
-    </div>
-  </section>
-);
+import { auth, googleProvider } from 'src/services/firebase';
+import { signInWithPopup } from 'firebase/auth';
+import { useAuth } from 'src/contexts/AuthContext';
+import './HomePage.css'; // For animations and styling
+import '../components/Modal.css'; // For the new modal
 
 function HomePage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [error, setError] = useState('');
+  const [showAdminIdModal, setShowAdminIdModal] = useState(false);
+  const [adminId, setAdminId] = useState('');
+  const [idToken, setIdToken] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleGetStarted = () => {
-    navigate('/login');
+  useEffect(() => {
+    document.body.className = 'light-theme';
+  }, []);
+
+  const performLogin = async (token, adminId = null) => {
+    setError('');
+    try {
+      const payload = { token: token };
+      if (adminId) {
+        payload.admin_id = adminId;
+      }
+
+      const response = await fetch('https://eduscheduler-m5jz.onrender.com/api/v1/auth/login/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        login(data.access_token); // Use useAuth hook to set token
+        navigate('/dashboard');
+      } else {
+        switch (data.detail) {
+          case 'NEW_STUDENT_MISSING_ADMIN_ID':
+            setIdToken(token);
+            setShowAdminIdModal(true);
+            break;
+          case 'ACCOUNT_PENDING_APPROVAL':
+            navigate('/pending-approval');
+            break;
+          case 'ACCOUNT_REJECTED':
+            setError('Your account registration has been rejected. Please contact an administrator.');
+            break;
+          default:
+            setError(data.detail || 'An unknown error occurred.');
+            break;
+        }
+      }
+    } catch (err) {
+      console.error('Backend interaction error', err);
+      setError('Failed to connect to the server.');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const token = await result.user.getIdToken();
+      await performLogin(token);
+    } catch (error) {
+      console.error('Google sign-in error', error);
+      setError('Google sign-in failed. Please try again.');
+    }
+  };
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const response = await fetch('https://eduscheduler-m5jz.onrender.com/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        login(data.access_token); // Use useAuth hook to set token
+        navigate('/dashboard');
+      } else {
+        setError(data.detail || 'Admin login failed.');
+      }
+    } catch (err) {
+      console.error('Admin login error', err);
+      setError('Failed to connect to the server for admin login.');
+    }
+  };
+
+  const handleAdminIdSubmit = async (e) => {
+    e.preventDefault();
+    if (adminId && idToken) {
+      setShowAdminIdModal(false);
+      await performLogin(idToken, adminId);
+    }
   };
 
   return (
-    <div className="home-page">
-      <header className="home-header">
-        <h1 className="main-title">AI-Powered Timetable Scheduler</h1>
-        <p className="subtitle">Intelligent Timetabling for Higher Education Institutions in Jharkhand</p>
-        <button onClick={handleGetStarted} className="get-started-btn">Get Started</button>
-      </header>
+    <div className="login-page">
+      <div className="login-container">
+        <h1 className="page-title">Welcome to EduScheduler</h1>
+        <p>Please sign in to continue</p>
 
-      <main>
-        <div className="features-grid">
-          <FeatureCard
-            icon="🧠"
-            title="AI-Powered Scheduling"
-            description="Leveraging advanced algorithms to automatically generate optimized, conflict-free timetables, saving hundreds of administrative hours."
+        {/* Google Login */}
+        <button onClick={handleGoogleLogin} className="google-login-button">
+          Sign in with Google
+        </button>
+
+        {/* Admin Login */}
+        <form onSubmit={handleAdminLogin} className="admin-login-form">
+          <h2>Admin Login</h2>
+          <input
+            type="email"
+            placeholder="Admin Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
-          <FeatureCard
-            icon="🏆"
-            title="SIH 2023 Hackathon Project"
-            description="Proudly developed for the Smart India Hackathon (Problem: SIH 25028), addressing real-world educational challenges with innovative technology."
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
-          <FeatureCard
-            icon="🇮🇳"
-            title="Solving for Jharkhand Govt."
-            description="A dedicated solution to tackle complex scheduling problems faced by educational institutions under the Government of Jharkhand."
-          />
-          <FeatureCard
-            icon="⚡️"
-            title="Dynamic & Smart Timetables"
-            description="Create, manage, and distribute timetables that adapt to changing needs, resource availability, and faculty preferences effortlessly."
-          />
+          <button type="submit" className="admin-login-button">Login as Admin</button>
+        </form>
+
+        {error && <p className="login-error">{error}</p>}
+      </div>
+
+      {showAdminIdModal && (
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <h2>Student Registration</h2>
+            <p>Please enter the Admin ID provided by your institution to request access.</p>
+            <form onSubmit={handleAdminIdSubmit}>
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="Enter Admin ID"
+                value={adminId}
+                onChange={(e) => setAdminId(e.target.value)}
+                required
+              />
+              <div className="modal-actions">
+                <button type="submit" className="modal-button primary">Submit for Approval</button>
+              </div>
+            </form>
+          </div>
         </div>
-
-        <InfoSection title="The Challenge of Manual Scheduling">
-          <p>
-            Higher Education institutions often face immense challenges in class scheduling due to limited infrastructure, faculty constraints, diverse elective courses, and overlapping departmental requirements. Manual timetable preparation frequently leads to clashes, underutilized classrooms, uneven workload distribution, and widespread dissatisfaction among both students and faculty.
-          </p>
-        </InfoSection>
-
-        <InfoSection title="Why AI is Essential (NEP 2020 Context)">
-          <p>
-            With the introduction of the National Education Policy (NEP) 2020, the complexity of scheduling has grown exponentially, emphasizing flexible, multi-disciplinary learning. An AI-based system is no longer a luxury but a necessity to handle these dynamic requirements, ensuring educational goals are met efficiently and effectively.
-          </p>
-        </InfoSection>
-
-        <InfoSection title="Expected Outcomes">
-          <ul>
-            <li>Maximized utilization of classrooms, labs, and other resources.</li>
-            <li>Fair and balanced workload distribution for faculty.</li>
-            <li>Conflict-free schedules for students, accommodating electives.</li>
-            <li>Significant reduction in administrative effort and time.</li>
-            <li>Improved overall satisfaction for both students and faculty.</li>
-          </ul>
-        </InfoSection>
-
-      </main>
+      )}
     </div>
   );
 }

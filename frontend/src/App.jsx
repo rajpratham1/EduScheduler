@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from 'src/contexts/AuthContext.jsx';
-import LoginPage from 'src/pages/LoginPage';
 import DashboardLayout from 'src/layouts/DashboardLayout';
 import AdminLayout from 'src/layouts/AdminLayout';
 import PrivateRoute from 'src/components/PrivateRoute';
