@@ -24,7 +24,7 @@ function LoginPage() {
         payload.admin_id = adminId;
       }
 
-      const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/v1/auth/login/google', {
+      const response = await fetch('https://eduscheduler-m5jz.onrender.com/api/v1/auth/login/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
