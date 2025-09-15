@@ -39,7 +39,7 @@ EduScheduler is a web-based platform with role-based access, offering distinct f
 *   **Google Login:** All users authenticate via Google.
 *   **Admin Login:** Fixed credentials (from environment variables) for initial setup.
     *   Gmail: `rajpratham40@gmail.com`
-    *   Password: `Pratham@5665`
+    *   Password: `<your-admin-password>`
 *   **Student Registration:** Students register with their Google account and must enter an Admin ID during their first login. Access is granted only after Admin approval.
 *   **Faculty Registration:** Faculty accounts are created and managed exclusively by the Admin, who provides a unique Faculty ID.
 

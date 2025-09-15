@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Dict
 
 class Faculty(BaseModel):
     id: Optional[str] = None
@@ -70,7 +70,7 @@ class ClassAssignment(BaseModel):
     day_of_week: str # e.g., "Monday"
     time_slot: str # e.g., "09:00-10:00"
 
-from typing import Dict
+
 
 class SeatingPlanRequest(BaseModel):
     batch_id: str

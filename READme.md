@@ -39,7 +39,7 @@ EduScheduler is a web-based platform with role-based access, offering distinct f
 *   **Google Login:** All users authenticate via Google.
 *   **Admin Login:** Fixed credentials (from environment variables) for initial setup.
     *   Gmail: `rajpratham40@gmail.com`
-    *   Password: `Pratham@5665`
+    *   Password: `<your-admin-password>`
 *   **Student Registration:** Students register with their Google account and must enter an Admin ID during their first login. Access is granted only after Admin approval.
 *   **Faculty Registration:** Faculty accounts are created and managed exclusively by the Admin, who provides a unique Faculty ID.
 
@@ -136,5 +136,51 @@ To set up and run EduScheduler locally, follow these steps:
 ### 1. Clone the Repository
 
 ```bash
+```bash
 git clone <your-repo-url>
 cd EduScheduler
+```
+
+## 🚀 Deployment
+
+### Frontend (GitHub Pages)
+
+To deploy the frontend to GitHub Pages, follow these steps:
+
+1.  **Install `gh-pages`:**
+    ```bash
+    npm install gh-pages --save-dev
+    ```
+2.  **Update `package.json`:**
+    Add the following properties to your `package.json` file:
+    - `homepage`: `https://<your-github-username>.github.io/<your-repo-name>`
+    - `scripts`:
+      ```json
+      "scripts": {
+        "predeploy": "npm run build",
+        "deploy": "gh-pages -d dist"
+      }
+      ```
+3.  **Deploy:**
+    ```bash
+    npm run deploy
+    ```
+
+### Backend (Render)
+
+To deploy the backend to Render, follow these steps:
+
+1.  **Create a new Web Service on Render.**
+2.  **Connect your GitHub repository.**
+3.  **Configure the service:**
+    - **Name:** A name for your service (e.g., `eduscheduler-backend`).
+    - **Region:** Choose a region close to you.
+    - **Branch:** `main` (or your default branch).
+    - **Root Directory:** `backend`.
+    - **Runtime:** `Python 3`.
+    - **Build Command:** `pip install -r requirements.txt`.
+    - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+4.  **Add Environment Variables:**
+    - Add all the environment variables from your `.env` file to the Render environment variables section. This includes your Firebase credentials and any other secrets.
+5.  **Deploy.**
+
