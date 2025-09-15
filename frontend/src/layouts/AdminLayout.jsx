@@ -12,7 +12,7 @@ function AdminLayout() {
           <li><Link to="/dashboard/admin/courses">Manage Courses</Link></li>
           <li><Link to="/dashboard/admin/assignments">Manage Assignments</Link></li>
           <li><Link to="/dashboard/admin/subjects">Manage Subjects</Link></li>
-          <li><Lto="/dashboard/admin/classrooms">Manage Classrooms</Link></li>
+          <li><Link to="/dashboard/admin/classrooms">Manage Classrooms</Link></li>
           <li><Link to="/dashboard/admin/timetables">Manage Timetables</Link></li>
           <li><Link to="/dashboard/admin/settings">Feedback Settings</Link></li>
         </ul>
