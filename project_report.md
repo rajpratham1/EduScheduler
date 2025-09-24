@@ -6,17 +6,6 @@
 
 **Project Title:** EduScheduler - Automated Timetable Generator
 
-**Team:**
-- **Team Leader:** Pratham Kumar
-- **Frontend:** Harshwardhan, Aryan Uppadhay
-- **Backend:** Pratham Kumar, Harshwardhan
-- **Database:** Pratham Kumar, Aryan Uppadhay
-- **Deployment & GitHub:** Pallavi Kumari, Sukhvinder Yadav
-- **Integration:** Kunal Gupta, Harshwardhan, Sukhvinder Yadav
-- **Testing:** Kunal Gupta, Pratham Kumar
-- **Security:** Harshwardhan, Pratham Kumar, Pallavi Kumari
-- **Documentation & Video:** Sukhvinder Yadav, Pallavi Kumari
-
 ---
 
 ## 1. Abstract/Summary
