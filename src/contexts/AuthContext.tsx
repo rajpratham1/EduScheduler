@@ -40,6 +40,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Get the user's profile
           const userProfile = await authService.getCurrentUserProfile();
           if (userProfile) {
+            const token = await firebaseUser.getIdToken();
+            localStorage.setItem('authToken', token);
             setUser({
               id: firebaseUser.uid,
               email: firebaseUser.email!,
@@ -69,6 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (type === 'admin') {
         const result = await authService.loginAdmin(email, password);
         if (result.success && result.user && result.profile) {
+          const token = await result.user.getIdToken();
+          localStorage.setItem('authToken', token);
           setUser({
             id: result.user.uid,
             email: result.user.email!,
@@ -82,6 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (type === 'faculty' && secretCode) {
         const result = await authService.loginFaculty(email, password, secretCode);
         if (result.success && result.user && result.profile) {
+          const token = await result.user.getIdToken();
+          localStorage.setItem('authToken', token);
           setUser({
             id: result.user.uid,
             email: result.user.email!,

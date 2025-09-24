@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/apiService';
+import { auth } from '../config/firebase';
 import ClassroomManagement from './admin/ClassroomManagement';
 import FacultyManagement from './admin/FacultyManagement';
 import StudentManagement from './admin/StudentManagement';
@@ -56,13 +57,15 @@ const AdminDashboard: React.FC = () => {
   const loadStats = async () => {
     setLoadingStats(true);
     try {
-      const token = await user.getIdToken();
-      const response = await apiService.get('/admin/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setStats(response.data.stats);
-      setAdminProfile(response.data.profile);
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        const response = await apiService.get('/admin/dashboard', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setStats(response.data.stats);
+        setAdminProfile(response.data.profile);
+      }
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
