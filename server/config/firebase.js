@@ -3,9 +3,10 @@ const admin = require('firebase-admin');
 const initializeFirebase = () => {
   if (admin.apps.length === 0) { // Prevent re-initializing
     if (process.env.NODE_ENV === 'production') {
-      // In production, Firebase Admin SDK automatically finds credentials
-      // via the GOOGLE_APPLICATION_CREDENTIALS environment variable set by Render's Secret File.
+      // In production, load credentials from environment variable
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
       admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
         databaseURL: process.env.FIREBASE_DATABASE_URL
       });
     } else {
