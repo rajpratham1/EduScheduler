@@ -235,7 +235,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 - Create an issue on GitHub
-- Email: support@eduscheduler.com
+- Email: rajpratham40@gmail.com
 - Documentation: [docs.eduscheduler.com](https://docs.eduscheduler.com)
 
 ---
