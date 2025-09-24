@@ -1,291 +1,177 @@
-# Multi-Admin Educational Website - Complete System
+# EduScheduler - Technical Documentation
 
-## 🎓 Overview
+---
 
-This is a comprehensive, fully-functional multi-admin educational management system built with React/TypeScript, Firebase, and AI-powered features. The system supports multiple administrators, each managing their own isolated educational institutions with complete data separation and security.
+## 📜 Table of Contents
 
-## 🚀 Key Features
+1.  [**Introduction**](#-introduction)
+2.  [**System Architecture**](#-system-architecture)
+3.  [**Technology Stack**](#-technology-stack)
+4.  [**Project Structure**](#-project-structure)
+    - [Frontend](#frontend)
+    - [Backend](#backend)
+5.  [**Database Schema**](#-database-schema)
+6.  [**API Endpoints**](#-api-endpoints)
+7.  [**Core Features Deep Dive**](#-core-features-deep-dive)
+    - [AI Schedule Modification](#ai-schedule-modification)
+    - [Multi-Admin System](#multi-admin-system)
+8.  [**Local Development Setup**](#-local-development-setup)
+9.  [**Deployment**](#-deployment)
 
-### 1. **Multi-Admin Architecture**
-- Complete admin isolation with unique secret codes
-- Each admin manages their own institution independently
-- Secure data separation using Firebase security rules
-- Role-based access control (Admin, Faculty, Student)
+---
 
-### 2. **Admin Secret Code System**
-- Unique 8-character alphanumeric codes for each admin
-- Students and faculty join using admin secret codes
-- Automatic code generation and regeneration
-- Usage tracking and analytics
+## 📖 Introduction
 
-### 3. **Complete User Management**
-- **Admins**: Full system control, user management, schedule generation
-- **Faculty**: Course management, attendance tracking, assignments, grading
-- **Students**: Course enrollment, assignment submission, schedule viewing
+**EduScheduler** is a comprehensive, full-stack educational management system designed for the SIH Hackathon 2025 (Problem ID: 25028). Its core purpose is to provide a robust platform for educational institutions to manage students, faculty, and academic structures, with a key innovation in its AI-powered scheduling capabilities. The system allows administrators to modify complex timetables using natural language commands, significantly reducing administrative overhead.
 
-### 4. **AI-Powered Schedule Generator**
-- Genetic algorithm optimization for conflict-free schedules
-- Constraint satisfaction (faculty preferences, classroom availability)
-- Automatic schedule optimization with multiple criteria
-- Schedule conflict detection and resolution
-- Real-time schedule modifications
+This document provides a detailed technical overview of the project's architecture, features, and implementation.
 
-### 5. **Comprehensive Data Management**
-- Students, Faculty, Subjects, Classrooms, Departments
-- Attendance tracking with QR codes
-- Assignment creation and submission system
-- Announcement and notification system
-- Academic terms and holiday management
+---
 
-### 6. **Advanced Import/Export System**
-- CSV import/export for all data types
-- Bulk data operations with validation
-- Template generation for easy data import
-- Error reporting and data validation
-- Support for multiple file formats
+## 🏗️ System Architecture
 
-### 7. **Analytics and Reporting**
-- Student performance analytics
-- Faculty workload analysis
-- Attendance reports and trends
-- Schedule utilization metrics
-- Institution-wide statistics
+The application follows a modern, decoupled, full-stack architecture, consisting of three primary layers: a frontend client, a backend API, and a cloud database.
 
-## 📁 Project Structure
+```mermaid
+graph TD
+    A[End User] -->|Interacts via Browser| B(Frontend - React/Vite);
+    B -->|HTTPS API Calls| C{Backend - Node.js/Express};
+    C -->|Firebase SDK| D[(Database - Firestore)];
+    C -->|REST API| E[OpenAI API];
+
+    subgraph "Render Cloud"
+        B -- Deployed as --> B_S[Static Site];
+        C -- Deployed as --> C_W[Web Service];
+    end
+
+    subgraph "Google Cloud"
+        D;
+    end
+
+    subgraph "OpenAI"
+        E;
+    end
+```
+
+-   **Frontend**: A Single Page Application (SPA) built with React that provides the user interface. It is deployed as a **Static Site** on Render.
+-   **Backend**: A Node.js/Express server that acts as a REST API. It handles all business logic, authentication, and is the only layer with direct access to the database and external AI services. It is deployed as a **Web Service** on Render.
+-   **Database**: Google Firestore is used as the NoSQL database for storing all application data.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer      | Technology                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            - **React**: Node.js, Express.js, OpenAI API, Firebase Admin SDK
+- **Database**: Google Firestore
+- **Deployment**: Render
+
+---
+
+## 📂 Project Structure
+
+### Frontend (`/src`)
 
 ```
 src/
-├── components/           # React components
-│   ├── admin/           # Admin dashboard components
-│   ├── auth/            # Authentication components
-│   └── common/          # Shared components
-├── config/              # Firebase configuration
-├── contexts/            # React contexts
-├── hooks/               # Custom hooks
-├── services/            # Business logic and API calls
-│   ├── comprehensiveFirebaseService.ts    # Main Firebase service
-│   ├── completeAuthService.ts             # Authentication service
-│   ├── aiScheduleGenerator.ts             # AI schedule generation
-│   └── dataImportExportService.ts         # Import/export functionality
-├── types/               # TypeScript type definitions
-└── utils/               # Utility functions
+├── components/   # Reusable React components for UI elements.
+│   ├── admin/      # Components specific to the Admin Dashboard.
+│   ├── auth/       # Login, Signup, Forgot Password components.
+│   └── common/     # Shared components like modals, spinners, etc.
+├── contexts/     # React Contexts for global state management.
+│   ├── AuthContext.tsx      # Manages user authentication state (user, role, token).
+│   ├── ThemeContext.tsx     # Manages dark/light mode.
+│   └── LanguageContext.tsx  # Manages multilingual support.
+├── services/     # Handles business logic and API communication.
+│   └── apiService.ts      # Central service for making backend API calls.
+├── types/        # TypeScript type definitions and interfaces (e.g., User, Schedule).
+└── App.tsx       # Main application component, defines routing.
 ```
 
-## 🔐 Security Features
+### Backend (`/server`)
 
-### Firebase Security Rules
-- Admin isolation with proper access control
-- Role-based permissions for all collections
-- Secret code validation for user registration
-- Audit logging for all operations
-
-### Authentication
-- Secure email/password authentication
-- Role-based login (Admin/Faculty/Student)
-- Secret code validation
-- Password reset functionality
-
-## 📊 Data Models
-
-### Core Entities
-- **Admin**: Institution management with settings and subscription
-- **Faculty**: Teaching staff with subjects and preferences
-- **Student**: Enrolled students with academic information
-- **Department**: Academic departments with courses
-- **Subject**: Courses with prerequisites and requirements
-- **Classroom**: Physical spaces with capacity and facilities
-- **Schedule**: AI-generated timetables with optimization
-
-### Extended Features
-- **Attendance**: QR-code based attendance tracking
-- **Assignments**: Assignment creation and submission
-- **Announcements**: Institution-wide communications
-- **Analytics**: Performance and utilization metrics
-- **Audit Logs**: Complete activity tracking
-
-## 🤖 AI Features
-
-### Schedule Generation
-- **Genetic Algorithm**: Population-based optimization
-- **Constraint Satisfaction**: Faculty preferences, room availability
-- **Multi-objective Optimization**: Minimize conflicts, maximize satisfaction
-- **Real-time Adaptation**: Dynamic schedule modifications
-
-### Optimization Criteria
-- Faculty workload balance
-- Classroom utilization efficiency
-- Student schedule preferences
-- Academic constraint compliance
-- Resource allocation optimization
-
-## 📱 User Interfaces
-
-### Admin Dashboard
-- Institution overview and analytics
-- User management (Faculty/Students)
-- Schedule generation and management
-- Data import/export tools
-- Settings and configuration
-
-### Faculty Dashboard
-- Course management
-- Attendance tracking
-- Assignment creation and grading
-- Student performance monitoring
-- Schedule viewing
-
-### Student Dashboard
-- Course enrollment and schedules
-- Assignment submission
-- Attendance tracking
-- Performance monitoring
-- Announcements and notifications
-
-## 🔧 Technical Implementation
-
-### Frontend
-- **React 18** with TypeScript
-- **Tailwind CSS** for styling
-- **React Router** for navigation
-- **Firebase SDK** for backend integration
-- **Vite** for build tooling
-
-### Backend
-- **Firebase Firestore** for database
-- **Firebase Authentication** for user management
-- **Firebase Storage** for file uploads
-- **Firebase Security Rules** for data protection
-
-### AI/ML
-- **Genetic Algorithm** for schedule optimization
-- **Constraint Programming** for requirement satisfaction
-- **Multi-objective Optimization** for competing goals
-- **Real-time Analytics** for performance monitoring
-
-## 📋 Database Collections
-
-### Core Collections
 ```
-admins/                  # Admin profiles and settings
-admin_secret_codes/      # Secret codes for admin isolation
-students/                # Student profiles and academic data
-faculty/                 # Faculty profiles and preferences
-departments/             # Academic departments
-subjects/                # Course information
-classrooms/              # Physical spaces
-schedules/               # Generated timetables
+server/
+├── config/       # Configuration files (e.g., Firebase initialization).
+├── middleware/   # Express middleware.
+│   └── auth.js       # Verifies user tokens for protected routes.
+├── routes/       # API route definitions for each resource (e.g., admin.js, student.js).
+├── services/     # Backend-specific business logic.
+└── index.js      # Main entry point for the Express server.
 ```
 
-### Feature Collections
-```
-attendance/              # Attendance records
-assignments/             # Assignment data
-assignment_submissions/  # Student submissions
-announcements/          # Institution communications
-feedback_forms/         # Student feedback systems
-qr_codes/              # Attendance QR codes
-analytics/             # Performance metrics
-audit_logs/            # Activity tracking
-```
+---
 
-## 🚀 Getting Started
+## 🗄️ Database Schema
 
-### Prerequisites
-- Node.js 18+
-- Firebase project with Firestore enabled
-- Environment variables configured
+Data is stored in Google Firestore, a NoSQL document database. The main collections include:
 
-### Installation
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Configure Firebase environment variables
-4. Deploy Firestore security rules
-5. Start development server: `npm run dev`
+-   `users`: Stores user profiles, including their role (`admin`, `faculty`, `student`) and authentication UID.
+-   `schedules`: Contains all class, exam, and event schedule documents.
+-   `students`, `faculty`, `departments`, `subjects`, `classrooms`: Collections for managing the core academic data.
+-   `announcements`: For site-wide notifications.
+-   `ai_interactions`: Logs conversations with the AI for history and auditing.
 
-### Environment Variables
-```
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
-```
+---
 
-## 📈 Performance Features
+## 🌐 API Endpoints
 
-### Optimization
-- Lazy loading of components
-- Efficient data fetching with pagination
-- Caching of frequently accessed data
-- Optimized Firebase queries
-- Bundle splitting and code optimization
+A RESTful API is provided by the backend server. All endpoints are prefixed with `/api`.
 
-### Scalability
-- Multi-admin architecture for horizontal scaling
-- Efficient database indexing
-- Optimized security rules for performance
-- CDN integration for static assets
+| Endpoint                      | Method | Protected | Description                                            |
+| ----------------------------- | ------ | --------- | ------------------------------------------------------ |
+| `/auth/login`                 | POST   | No        | Authenticates a user and returns a token.              |
+| `/auth/signup`                | POST   | No        | Registers a new student (pending approval).            |
+| `/admin/students`             | GET    | Yes       | Retrieves a list of all students.                      |
+| `/admin/students/:id`         | PUT    | Yes       | Updates a specific student's details.                  |
+| `/admin/approve-student/:id`  | POST   | Yes       | Approves a new student's registration.                 |
+| `/faculty/assignments`        | POST   | Yes       | Creates a new assignment for a course.                 |
+| `/schedule/generate`          | POST   | Yes       | Initiates the AI schedule generation process.          |
+| `/ai-schedule-modify`         | POST   | Yes       | Processes a natural language command for the AI.       |
+| `/health`                     | GET    | No        | Health check endpoint used by Render.                  |
 
-## 🔐 Updated Firebase Security Rules
+*This is a simplified list. See the `/server/routes` directory for a complete definition of all endpoints.*
 
-The system includes comprehensive Firebase security rules that ensure:
-- Complete admin isolation
-- Role-based access control
-- Secret code validation
-- Data protection and privacy
-- Audit trail maintenance
+---
 
-## 📊 Features Summary
+## ✨ Core Features Deep Dive
 
-### ✅ Completed Features
-1. **Multi-Admin System** - Complete admin isolation with secret codes
-2. **Authentication** - Role-based login with proper validation
-3. **Data Models** - Comprehensive TypeScript interfaces
-4. **Firebase Integration** - Complete CRUD operations for all entities
-5. **AI Schedule Generator** - Genetic algorithm optimization
-6. **Import/Export System** - CSV/Excel support with validation
-7. **Security Rules** - Complete Firebase security implementation
+### AI Schedule Modification
 
-### 🎯 Advanced Features
-- Real-time notifications
-- Mobile responsiveness
-- Offline capability
-- Advanced analytics
-- Integration APIs
-- Backup and recovery
-- Multi-language support
+1.  **Request**: The admin user types a natural language command (e.g., "Move the Physics class to Wednesday at 10 AM") into the frontend.
+2.  **API Call**: The frontend sends this command to the `/api/ai-schedule-modify` endpoint on the backend.
+3.  **Backend Processing**: The backend server constructs a detailed prompt containing the user's command, current schedule data, and constraints.
+4.  **OpenAI API**: This prompt is sent to the OpenAI GPT-4 API.
+5.  **AI Response**: OpenAI processes the request and returns a structured JSON object containing the proposed modifications, conflicts, and a human-readable summary.
+6.  **Frontend Display**: The frontend receives this JSON and displays the proposed changes to the admin for confirmation.
+7.  **Confirmation**: If the admin confirms, the frontend sends the `modifications` array to the `/api/apply-modifications` endpoint to be committed to the database.
 
-## 🛠️ Deployment
+### Multi-Admin System
 
-### Production Setup
-1. Build the project: `npm run build`
-2. Deploy to Firebase Hosting
-3. Configure custom domain
-4. Set up monitoring and analytics
-5. Configure backup strategies
+-   **Isolation**: Data is isolated based on an `adminId` or `institutionId` field present in most database documents.
+-   **Security Rules**: Firestore Security Rules are critical. They ensure that a logged-in user can only read or write data that contains their own `adminId`. For example:
+    ```
+    match /schedules/{scheduleId} {
+      allow read, write: if request.auth.uid == resource.data.adminId;
+    }
+    ```
+-   **Registration**: Faculty and students register using a secret code that links them to the correct admin/institution.
 
-### Monitoring
-- Firebase Analytics for usage tracking
-- Error monitoring and logging
-- Performance monitoring
-- Security monitoring
-- User behavior analytics
+---
 
-## 📞 Support
+## 🛠️ Local Development Setup
 
-The system is designed to be fully self-contained and production-ready. All major features are implemented and tested, including:
+1.  **Clone Repository**: `git clone https://github.com/rajpratham1/EduScheduler.git`
+2.  **Install Backend Dependencies**: `cd EduScheduler/server && npm install`
+3.  **Install Frontend Dependencies**: `cd .. && npm install`
+4.  **Configure Backend**: Create `.env` and `firebase-service-account.json` files in the `/server` directory based on the provided `.example` files.
+5.  **Configure Frontend**: Create a `.env` file in the project root and add all `VITE_FIREBASE_*` keys.
+6.  **Run Servers**: Start the backend (`npm start` in `/server`) and frontend (`npm run dev` in root) in separate terminals.
 
-- Multi-admin architecture
-- Complete user management
-- AI-powered schedule generation
-- Data import/export functionality
-- Comprehensive security measures
-- Real-time analytics and reporting
+---
 
-## 🏆 System Highlights
+## 🚀 Deployment
 
-This educational management system represents a complete, production-ready solution that can handle multiple institutions simultaneously while maintaining complete data isolation and security. The AI-powered schedule generation and comprehensive feature set make it suitable for educational institutions of all sizes.
+This project is deployed on **Render** as two separate services.
 
-The system is built with modern technologies and follows best practices for security, performance, and maintainability. It's designed to scale and can easily accommodate growing institutions with increasing numbers of students and faculty members.
+-   **Backend (Web Service)**: Deploys from the `/server` directory. Requires `NODE_ENV` set to `production` and all secrets configured in the Render dashboard.
+-   **Frontend (Static Site)**: Deploys from the project root, building the `/dist` directory. Requires `VITE_API_URL` to be set to the live backend URL.
