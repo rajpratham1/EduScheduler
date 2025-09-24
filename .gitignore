@@ -27,3 +27,4 @@ dist-ssr
 # Server-specific ignores
 server/.env
 server/firebase-service-account.json
+server/firebase-service-account.example.json

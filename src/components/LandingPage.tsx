@@ -16,15 +16,18 @@ import {
   CheckCircle,
   ArrowRight,
   Star,
-  Award
+  Award,
+  Mail
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage, languageNames, Language } from '../contexts/LanguageContext';
+import ContactModal from './common/ContactModal';
 
 const LandingPage: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [isContactModalOpen, setContactModalOpen] = useState(false);
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
@@ -291,10 +294,19 @@ const LandingPage: React.FC = () => {
                 <Phone className="h-4 w-4" />
                 <span className="hidden sm:inline">WhatsApp</span>
               </a>
+              <button
+                onClick={() => setContactModalOpen(true)}
+                className="inline-flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-200 hover:scale-105"
+              >
+                <Mail className="h-4 w-4" />
+                <span className="hidden sm:inline">Contact Admin</span>
+              </button>
             </div>
           </div>
         </footer>
       </main>
+
+      {isContactModalOpen && <ContactModal onClose={() => setContactModalOpen(false)} />}
     </div>
   );
 };
