@@ -17,17 +17,20 @@ import {
   ArrowRight,
   Star,
   Award,
-  Mail
+  Mail,
+  HelpCircle
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage, languageNames, Language } from '../contexts/LanguageContext';
 import ContactModal from './common/ContactModal';
+import UserManualModal from './common/UserManualModal';
 
 const LandingPage: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [isContactModalOpen, setContactModalOpen] = useState(false);
+  const [isManualModalOpen, setManualModalOpen] = useState(false);
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
@@ -285,6 +288,13 @@ const LandingPage: React.FC = () => {
             {/* Compact Help Section */}
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">{t('landing.help')}</span>
+              <button
+                onClick={() => setManualModalOpen(true)}
+                className="inline-flex items-center space-x-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-all duration-200 hover:scale-105"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">User Manual</span>
+              </button>
               <a
                 href="https://wa.me/916200892887"
                 target="_blank"
@@ -307,6 +317,7 @@ const LandingPage: React.FC = () => {
       </main>
 
       {isContactModalOpen && <ContactModal onClose={() => setContactModalOpen(false)} />}
+      {isManualModalOpen && <UserManualModal onClose={() => setManualModalOpen(false)} />}
     </div>
   );
 };
