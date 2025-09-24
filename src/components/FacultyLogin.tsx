@@ -63,7 +63,7 @@ const FacultyLogin: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="faculty@example.com"
+                placeholder="Enter your email"
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                 required
               />
@@ -79,7 +79,7 @@ const FacultyLogin: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Faculti@11"
+                  placeholder="Enter your password"
                   className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                   required
                 />
@@ -106,7 +106,7 @@ const FacultyLogin: React.FC = () => {
                 type="text"
                 value={secretCode}
                 onChange={(e) => setSecretCode(e.target.value)}
-                placeholder="ADMIN001"
+                placeholder="Enter your secret code"
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                 required
               />
