@@ -1,5 +1,5 @@
-# 🚀 Our Team
-
+# 🚀 Our Team(HexaTech Minds)
+# TEAM LEADER- Pratham Kumar
 This project was made possible by the hard work and collaboration of the entire EduScheduler team. Here are the roles and contributions of each member:
 
 <br>
