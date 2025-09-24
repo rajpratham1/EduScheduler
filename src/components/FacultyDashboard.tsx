@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { auth } from '../config/firebase';
 import { 
   Calendar, 
   QrCode, 
@@ -122,34 +123,36 @@ const FacultyDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const token = await user.getIdToken();
-      
-      const [assignmentsRes, announcementsRes] = await Promise.all([
-        axios.get('/api/assignments/faculty', { headers: { Authorization: `Bearer ${token}` }}),
-        axios.get('/api/announcements/faculty', { headers: { Authorization: `Bearer ${token}` }})
-      ]);
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        
+        const [assignmentsRes, announcementsRes] = await Promise.all([
+          axios.get('/api/assignments/faculty', { headers: { Authorization: `Bearer ${token}` }}),
+          axios.get('/api/announcements/faculty', { headers: { Authorization: `Bearer ${token}` }})
+        ]);
 
-      setAssignments(assignmentsRes.data.map((a: any) => ({
-        ...a,
-        dueDate: new Date(a.dueDate),
-        createdAt: new Date(a.createdAt)
-      })));
-      setAnnouncements(announcementsRes.data.announcements.map((a: any) => ({
-        ...a,
-        createdAt: new Date(a.createdAt)
-      })));
+        setAssignments(assignmentsRes.data.map((a: any) => ({
+          ...a,
+          dueDate: new Date(a.dueDate),
+          createdAt: new Date(a.createdAt)
+        })));
+        setAnnouncements(announcementsRes.data.announcements.map((a: any) => ({
+          ...a,
+          createdAt: new Date(a.createdAt)
+        })));
 
-      // Mock analytics - in real app, this would come from API
-      setAnalytics({
-        totalClasses: 45,
-        totalStudents: 120,
-        averageAttendance: 87,
-        assignmentStats: {
-          total: assignmentsRes.data.length,
-          pending: assignmentsRes.data.filter((a: any) => new Date(a.dueDate) > new Date()).length,
-          submitted: assignmentsRes.data.reduce((sum: number, a: any) => sum + a.submissionsCount, 0)
-        }
-      });
+        // Mock analytics - in real app, this would come from API
+        setAnalytics({
+          totalClasses: 45,
+          totalStudents: 120,
+          averageAttendance: 87,
+          assignmentStats: {
+            total: assignmentsRes.data.length,
+            pending: assignmentsRes.data.filter((a: any) => new Date(a.dueDate) > new Date()).length,
+            submitted: assignmentsRes.data.reduce((sum: number, a: any) => sum + a.submissionsCount, 0)
+          }
+        });
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -159,24 +162,26 @@ const FacultyDashboard = () => {
 
   const generateQRCode = async () => {
     try {
-      const token = await user.getIdToken();
-      const response = await axios.post('/api/attendance/generate-qr', qrForm, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        const response = await axios.post('/api/attendance/generate-qr', qrForm, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      alert('QR Code generated successfully!');
-      setShowQRGenerator(false);
-      setQrForm({
-        classId: '',
-        subjectId: '',
-        date: new Date().toISOString().split('T')[0],
-        startTime: '',
-        endTime: '',
-        duration: 300
-      });
-      
-      // Refresh QR codes list
-      // fetchQRCodes();
+        alert('QR Code generated successfully!');
+        setShowQRGenerator(false);
+        setQrForm({
+          classId: '',
+          subjectId: '',
+          date: new Date().toISOString().split('T')[0],
+          startTime: '',
+          endTime: '',
+          duration: 300
+        });
+        
+        // Refresh QR codes list
+        // fetchQRCodes();
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to generate QR code');
     }
@@ -184,24 +189,26 @@ const FacultyDashboard = () => {
 
   const createAssignment = async () => {
     try {
-      const token = await user.getIdToken();
-      await axios.post('/api/assignments', assignmentForm, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        await axios.post('/api/assignments', assignmentForm, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      alert('Assignment created successfully!');
-      setShowAssignmentForm(false);
-      setAssignmentForm({
-        title: '',
-        description: '',
-        classId: '',
-        subjectId: '',
-        dueDate: '',
-        maxMarks: 100,
-        instructions: '',
-        allowedFileTypes: 'pdf,doc,docx,ppt,pptx'
-      });
-      fetchDashboardData();
+        alert('Assignment created successfully!');
+        setShowAssignmentForm(false);
+        setAssignmentForm({
+          title: '',
+          description: '',
+          classId: '',
+          subjectId: '',
+          dueDate: '',
+          maxMarks: 100,
+          instructions: '',
+          allowedFileTypes: 'pdf,doc,docx,ppt,pptx'
+        });
+        fetchDashboardData();
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to create assignment');
     }
@@ -209,21 +216,23 @@ const FacultyDashboard = () => {
 
   const createAnnouncement = async () => {
     try {
-      const token = await user.getIdToken();
-      await axios.post('/api/announcements', announcementForm, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        await axios.post('/api/announcements', announcementForm, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      alert('Announcement posted successfully!');
-      setShowAnnouncementForm(false);
-      setAnnouncementForm({
-        title: '',
-        content: '',
-        priority: 'normal',
-        targetAudience: 'students',
-        expiryDate: ''
-      });
-      fetchDashboardData();
+        alert('Announcement posted successfully!');
+        setShowAnnouncementForm(false);
+        setAnnouncementForm({
+          title: '',
+          content: '',
+          priority: 'normal',
+          targetAudience: 'students',
+          expiryDate: ''
+        });
+        fetchDashboardData();
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to create announcement');
     }

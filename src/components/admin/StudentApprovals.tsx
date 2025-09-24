@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { apiService } from '../../services/apiService';
 import { useAuth } from '../../contexts/AuthContext';
+import { auth } from '../../config/firebase';
 
 interface SignupRequest {
   id: string;
@@ -51,15 +52,17 @@ const StudentApprovals = () => {
   const fetchSignupRequests = async () => {
     try {
       setLoading(true);
-      const token = await user.getIdToken();
-      const response = await apiService.get('/student/signup-requests', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setRequests(response.data.map((req: any) => ({
-        ...req,
-        requestedAt: new Date(req.requestedAt)
-      })));
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        const response = await apiService.get('/student/signup-requests', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setRequests(response.data.map((req: any) => ({
+          ...req,
+          requestedAt: new Date(req.requestedAt)
+        })));
+      }
     } catch (error) {
       console.error('Error fetching signup requests:', error);
     } finally {
@@ -70,16 +73,18 @@ const StudentApprovals = () => {
   const approveStudent = async (requestId: string) => {
     try {
       setProcessingId(requestId);
-      const token = await user.getIdToken();
-      
-      await apiService.post(`/student/approve-signup/${requestId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        
+        await apiService.post(`/student/approve-signup/${requestId}`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      // Remove the approved request from the list
-      setRequests(prev => prev.filter(req => req.id !== requestId));
-      setShowModal(false);
-      alert('Student approved successfully!');
+        // Remove the approved request from the list
+        setRequests(prev => prev.filter(req => req.id !== requestId));
+        setShowModal(false);
+        alert('Student approved successfully!');
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Failed to approve student';
       alert(errorMessage);
@@ -91,19 +96,21 @@ const StudentApprovals = () => {
   const rejectStudent = async (requestId: string) => {
     try {
       setProcessingId(requestId);
-      const token = await user.getIdToken();
-      
-      await apiService.post(`/student/reject-signup/${requestId}`, {
-        reason: rejectionReason || 'No reason provided'
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        
+        await apiService.post(`/student/reject-signup/${requestId}`, {
+          reason: rejectionReason || 'No reason provided'
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      // Remove the rejected request from the list
-      setRequests(prev => prev.filter(req => req.id !== requestId));
-      setShowModal(false);
-      setRejectionReason('');
-      alert('Student request rejected');
+        // Remove the rejected request from the list
+        setRequests(prev => prev.filter(req => req.id !== requestId));
+        setShowModal(false);
+        setRejectionReason('');
+        alert('Student request rejected');
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Failed to reject student';
       alert(errorMessage);

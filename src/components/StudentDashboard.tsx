@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { auth } from '../config/firebase';
 import { 
   Calendar, 
   BookOpen, 
@@ -90,22 +91,24 @@ const StudentDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const token = await user.getIdToken();
-      
-      const [profileRes, assignmentsRes, announcementsRes, feedbackRes] = await Promise.all([
-        axios.get('/api/student/profile', { headers: { Authorization: `Bearer ${token}` }}),
-        axios.get(`/api/assignments/class/${profile?.classId || 'default'}`, { headers: { Authorization: `Bearer ${token}` }}),
-        axios.get('/api/announcements/student', { headers: { Authorization: `Bearer ${token}` }}),
-        axios.get('/api/feedback/forms/student', { headers: { Authorization: `Bearer ${token}` }})
-      ]);
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        
+        const [profileRes, assignmentsRes, announcementsRes, feedbackRes] = await Promise.all([
+          axios.get('/api/student/profile', { headers: { Authorization: `Bearer ${token}` }}),
+          axios.get(`/api/assignments/class/${profile?.classId || 'default'}`, { headers: { Authorization: `Bearer ${token}` }}),
+          axios.get('/api/announcements/student', { headers: { Authorization: `Bearer ${token}` }}),
+          axios.get('/api/feedback/forms/student', { headers: { Authorization: `Bearer ${token}` }})
+        ]);
 
-      setProfile(profileRes.data);
-      setAssignments(assignmentsRes.data.map((a: any) => ({ ...a, dueDate: new Date(a.dueDate) })));
-      setAnnouncements(announcementsRes.data.announcements.map((a: any) => ({ 
-        ...a, 
-        createdAt: new Date(a.createdAt) 
-      })));
-      setFeedbackForms(feedbackRes.data);
+        setProfile(profileRes.data);
+        setAssignments(assignmentsRes.data.map((a: any) => ({ ...a, dueDate: new Date(a.dueDate) })));
+        setAnnouncements(announcementsRes.data.announcements.map((a: any) => ({ 
+          ...a, 
+          createdAt: new Date(a.createdAt) 
+        })));
+        setFeedbackForms(feedbackRes.data);
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -115,14 +118,16 @@ const StudentDashboard = () => {
 
   const markAnnouncementAsRead = async (announcementId: string) => {
     try {
-      const token = await user.getIdToken();
-      await axios.post(`/api/announcements/${announcementId}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setAnnouncements(prev => prev.map(ann => 
-        ann.id === announcementId ? { ...ann, hasRead: true } : ann
-      ));
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        await axios.post(`/api/announcements/${announcementId}/read`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setAnnouncements(prev => prev.map(ann => 
+          ann.id === announcementId ? { ...ann, hasRead: true } : ann
+        ));
+      }
     } catch (error) {
       console.error('Error marking announcement as read:', error);
     }
@@ -130,20 +135,22 @@ const StudentDashboard = () => {
 
   const submitAssignment = async (assignmentId: string, file: File, comments: string) => {
     try {
-      const token = await user.getIdToken();
-      const formData = new FormData();
-      formData.append('submissionFile', file);
-      formData.append('comments', comments);
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        const formData = new FormData();
+        formData.append('submissionFile', file);
+        formData.append('comments', comments);
 
-      await axios.post(`/api/assignments/${assignmentId}/submit`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+        await axios.post(`/api/assignments/${assignmentId}/submit`, formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
 
-      // Refresh assignments
-      fetchDashboardData();
+        // Refresh assignments
+        fetchDashboardData();
+      }
     } catch (error) {
       console.error('Error submitting assignment:', error);
     }
@@ -151,13 +158,15 @@ const StudentDashboard = () => {
 
   const handleQRScan = async (qrData: string) => {
     try {
-      const token = await user.getIdToken();
-      await axios.post(`/api/attendance/mark/${qrData}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      alert('Attendance marked successfully!');
-      setQrScanner(false);
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        await axios.post(`/api/attendance/mark/${qrData}`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        alert('Attendance marked successfully!');
+        setQrScanner(false);
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to mark attendance');
     }

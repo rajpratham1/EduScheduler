@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { auth } from '../config/firebase';
 import { 
   Plus, 
   Edit, 
@@ -82,21 +83,23 @@ const AdminCodes: React.FC = () => {
 
   const fetchCodes = async () => {
     try {
-      const token = await user.getIdToken();
-      const params = new URLSearchParams();
-      
-      if (filter === 'active') params.append('active', 'true');
-      if (filter === 'expired') params.append('expired', 'true');
-      
-      const response = await axios.get(`/api/admin-codes?${params}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setCodes(response.data.map((code: any) => ({
-        ...code,
-        createdAt: new Date(code.createdAt),
-        expiresAt: code.expiresAt ? new Date(code.expiresAt) : null
-      })));
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        const params = new URLSearchParams();
+        
+        if (filter === 'active') params.append('active', 'true');
+        if (filter === 'expired') params.append('expired', 'true');
+        
+        const response = await axios.get(`/api/admin-codes?${params}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setCodes(response.data.map((code: any) => ({
+          ...code,
+          createdAt: new Date(code.createdAt),
+          expiresAt: code.expiresAt ? new Date(code.expiresAt) : null
+        })));
+      }
     } catch (error) {
       console.error('Error fetching admin codes:', error);
       alert('Failed to fetch admin codes');
@@ -105,11 +108,13 @@ const AdminCodes: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const token = await user.getIdToken();
-      const response = await axios.get('/api/admin-codes/stats', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setStats(response.data);
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        const response = await axios.get('/api/admin-codes/stats', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setStats(response.data);
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
@@ -119,25 +124,27 @@ const AdminCodes: React.FC = () => {
 
   const createCode = async () => {
     try {
-      const token = await user.getIdToken();
-      await axios.post('/api/admin-codes/generate', {
-        ...createForm,
-        maxUses: createForm.maxUses ? parseInt(createForm.maxUses) : null
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setShowCreateModal(false);
-      setCreateForm({
-        name: '',
-        description: '',
-        expiresAt: '',
-        maxUses: '',
-        isActive: true
-      });
-      fetchCodes();
-      fetchStats();
-      alert('Admin code created successfully!');
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        await axios.post('/api/admin-codes/generate', {
+          ...createForm,
+          maxUses: createForm.maxUses ? parseInt(createForm.maxUses) : null
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setShowCreateModal(false);
+        setCreateForm({
+          name: '',
+          description: '',
+          expiresAt: '',
+          maxUses: '',
+          isActive: true
+        });
+        fetchCodes();
+        fetchStats();
+        alert('Admin code created successfully!');
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to create admin code');
     }
@@ -147,19 +154,21 @@ const AdminCodes: React.FC = () => {
     if (!selectedCode) return;
     
     try {
-      const token = await user.getIdToken();
-      await axios.put(`/api/admin-codes/${selectedCode.id}`, {
-        ...editForm,
-        maxUses: editForm.maxUses ? parseInt(editForm.maxUses) : null
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setShowEditModal(false);
-      setSelectedCode(null);
-      fetchCodes();
-      fetchStats();
-      alert('Admin code updated successfully!');
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        await axios.put(`/api/admin-codes/${selectedCode.id}`, {
+          ...editForm,
+          maxUses: editForm.maxUses ? parseInt(editForm.maxUses) : null
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setShowEditModal(false);
+        setSelectedCode(null);
+        fetchCodes();
+        fetchStats();
+        alert('Admin code updated successfully!');
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to update admin code');
     }
@@ -169,14 +178,16 @@ const AdminCodes: React.FC = () => {
     if (!confirm('Are you sure you want to delete this admin code?')) return;
     
     try {
-      const token = await user.getIdToken();
-      await axios.delete(`/api/admin-codes/${codeId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      fetchCodes();
-      fetchStats();
-      alert('Admin code deleted successfully!');
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        await axios.delete(`/api/admin-codes/${codeId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        fetchCodes();
+        fetchStats();
+        alert('Admin code deleted successfully!');
+      }
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to delete admin code');
     }
