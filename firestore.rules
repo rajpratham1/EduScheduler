@@ -1,0 +1,239 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function isFaculty() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/faculty/$(request.auth.uid));
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/students/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/students/$(request.auth.uid)).data.status == 'approved';
+    }
+    
+    function isOwner(adminId) {
+      return request.auth.uid == adminId;
+    }
+    
+    function isStudentOwner() {
+      return request.auth.uid == resource.id;
+    }
+    
+    function isFacultyOwner() {
+      return request.auth.uid == resource.id;
+    }
+    
+    function getAdminId() {
+      return isAdmin() ? request.auth.uid : null;
+    }
+    
+    function getStudentAdminId() {
+      return isStudent() ? get(/databases/$(database)/documents/students/$(request.auth.uid)).data.adminId : null;
+    }
+    
+    function getFacultyAdminId() {
+      return isFaculty() ? get(/databases/$(database)/documents/faculty/$(request.auth.uid)).data.adminId : null;
+    }
+    
+    function hasAdminAccess(adminId) {
+      return getAdminId() == adminId || getStudentAdminId() == adminId || getFacultyAdminId() == adminId;
+    }
+    
+    function isResourceOwnedByAdmin(adminId) {
+      return resource.data.adminId == adminId;
+    }
+    
+    function isRequestDataOwnedByAdmin(adminId) {
+      return request.resource.data.adminId == adminId;
+    }
+    
+    function canAccessAdminData() {
+      return isAdmin() || isFaculty() || isStudent();
+    }
+
+    // Admins collection
+    match /admins/{adminId} {
+      allow read: if isAuthenticated() && (isOwner(adminId) || canAccessAdminData()); 
+      allow write: if isAuthenticated() && isOwner(adminId);
+      allow create: if isAuthenticated();
+    }
+    
+    // Admin secret codes collection
+    match /admin_secret_codes/{codeId} {
+      allow read: if isAdmin() && isOwner(resource.data.adminId);
+      allow create: if isAdmin() && isOwner(request.resource.data.adminId);
+      allow update, delete: if isAdmin() && isOwner(resource.data.adminId);
+    }
+    
+    // Departments collection
+    match /departments/{departmentId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Faculty collection
+    match /faculty/{facultyId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update: if (isAdmin() && isResourceOwnedByAdmin(request.auth.uid)) || (isFaculty() && isFacultyOwner() && isResourceOwnedByAdmin(getFacultyAdminId()));
+      allow delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Students collection
+    match /students/{studentId} {
+      allow read: if isAuthenticated() && (hasAdminAccess(resource.data.adminId) || isOwner(studentId));
+      allow create: if true; // Allow public signup, but pending approval
+      allow update: if (isAdmin() && isResourceOwnedByAdmin(request.auth.uid)) || (isStudent() && isStudentOwner() && isResourceOwnedByAdmin(getStudentAdminId()));
+      allow delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Student signup requests collection
+    match /student_signup_requests/{requestId} {
+      allow read: if isAdmin();
+      allow create: if true; // Allow public signup requests
+      allow update, delete: if isAdmin();
+    }
+    
+    // Subjects collection
+    match /subjects/{subjectId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Classrooms collection
+    match /classrooms/{classroomId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Schedules collection
+    match /schedules/{scheduleId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Attendance collection
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if (isFaculty() && isRequestDataOwnedByAdmin(getFacultyAdminId())) || (isStudent() && isRequestDataOwnedByAdmin(getStudentAdminId()));
+      allow update: if isFaculty() && isResourceOwnedByAdmin(getFacultyAdminId());
+      allow delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Assignments collection
+    match /assignments/{assignmentId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isFaculty() && isRequestDataOwnedByAdmin(getFacultyAdminId());
+      allow update: if isFaculty() && resource.data.facultyId == request.auth.uid && isResourceOwnedByAdmin(getFacultyAdminId());
+      allow delete: if (isAdmin() && isResourceOwnedByAdmin(request.auth.uid)) || (isFaculty() && resource.data.facultyId == request.auth.uid && isResourceOwnedByAdmin(getFacultyAdminId()));
+    }
+    
+    // Assignment submissions collection
+    match /assignment_submissions/{submissionId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isStudent() && isRequestDataOwnedByAdmin(getStudentAdminId());
+      allow update: if isStudent() && resource.data.studentId == request.auth.uid && isResourceOwnedByAdmin(getStudentAdminId());
+      allow delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Announcements collection
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if (isFaculty() && isRequestDataOwnedByAdmin(getFacultyAdminId())) || (isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid));
+      allow update: if (isAdmin() && isResourceOwnedByAdmin(request.auth.uid)) || (isFaculty() && resource.data.authorId == request.auth.uid && isResourceOwnedByAdmin(getFacultyAdminId()));
+      allow delete: if (isAdmin() && isResourceOwnedByAdmin(request.auth.uid)) || (isFaculty() && resource.data.authorId == request.auth.uid && isResourceOwnedByAdmin(getFacultyAdminId()));
+    }
+    
+    // Feedback forms collection
+    match /feedback_forms/{formId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Feedback responses collection
+    match /feedback_responses/{responseId} {
+      allow read: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+      allow create: if isStudent() && isRequestDataOwnedByAdmin(getStudentAdminId());
+      allow update: if isStudent() && resource.data.studentId == request.auth.uid && isResourceOwnedByAdmin(getStudentAdminId());
+      allow delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // QR codes collection for attendance
+    match /qr_codes/{qrId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isFaculty() && isRequestDataOwnedByAdmin(getFacultyAdminId());
+      allow update: if isFaculty() && resource.data.facultyId == request.auth.uid && isResourceOwnedByAdmin(getFacultyAdminId());
+      allow delete: if isFaculty() && resource.data.facultyId == request.auth.uid && isResourceOwnedByAdmin(getFacultyAdminId());
+    }
+    
+    // Class faculty assignments
+    match /class_faculty/{assignmentId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create, update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Performance analytics
+    match /analytics/{analyticsId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow write: if (isAdmin() && isResourceOwnedByAdmin(request.auth.uid)) || (isFaculty() && isResourceOwnedByAdmin(getFacultyAdminId()));
+    }
+
+    // Settings operations
+    match /settings/{settingsId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Academic terms collection
+    match /academic_terms/{termId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Holidays collection
+    match /holidays/{holidayId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Time slots collection
+    match /time_slots/{slotId} {
+      allow read: if isAuthenticated() && hasAdminAccess(resource.data.adminId);
+      allow create: if isAdmin() && isRequestDataOwnedByAdmin(request.auth.uid);
+      allow update, delete: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+    }
+    
+    // Notification tokens for FCM
+    match /notification_tokens/{tokenId} {
+      allow read: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+      allow create, update: if isAuthenticated();
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+    
+    // Audit logs collection
+    match /audit_logs/{logId} {
+      allow read: if isAdmin() && isResourceOwnedByAdmin(request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Audit logs are immutable
+    }
+  }
+}
