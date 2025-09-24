@@ -1,243 +1,114 @@
-# EduScheduler - AI-Powered Timetable Modification System
+<div align="center">
+  <img src="public/logo.svg" alt="EduScheduler Logo" width="120" height="120">
+  <h1><b>EduScheduler</b></h1>
+  <p><b>AI-Powered Timetable Modification System</b></p>
+  <p>A comprehensive educational scheduling system with AI-powered natural language modification capabilities, built for the SIH Hackathon 2025 (Problem ID: 25028).</p>
+</div>
 
-A comprehensive educational scheduling system with AI-powered natural language modification capabilities for the SIH Hackathon 2025 (Problem ID: 25028).
+<br>
 
-## 🚀 Features
+### 🛠️ Tech Stack
 
-### Core Functionality
-- **Multi-Admin System**: Each admin manages their own faculty group with unique secret codes
-- **Faculty Management**: Complete CRUD operations with department linking
-- **Student Management**: Bulk import/export with roll number generation
-- **Classroom Management**: Labs, classrooms, and libraries with equipment tracking
-- **AI Schedule Modification**: Natural language timetable modifications using ChatGPT
-
-### AI-Powered Features
-- **Natural Language Processing**: Modify schedules using plain English commands
-- **File Upload Support**: Bulk modifications via CSV, Excel, or JSON files
-- **Conflict Detection**: Automatic detection of scheduling conflicts
-- **Undo/Redo System**: Up to 10 levels of modification history
-- **Chat Sessions**: Persistent conversation history with resume capability
-
-### User Experience
-- **25+ Languages**: Comprehensive multi-language support
-- **Dark/Light Themes**: System preference detection with smooth transitions
-- **Responsive Design**: Mobile-first approach with perfect mobile compatibility
-- **Accessibility**: WCAG 2.1 compliant with keyboard navigation
-
-## 🛠 Technology Stack
-
-### Frontend
-- **React 18** with TypeScript
-- **Tailwind CSS** for styling
-- **Firebase** for authentication and database
-- **Lucide React** for icons
-- **React Router** for navigation
-
-### Backend
-- **Node.js** with Express
-- **OpenAI GPT-4** for natural language processing
-- **Firebase Admin SDK** for database operations
-- **Multer** for file upload handling
-- **CSV/Excel parsing** for bulk data import
-
-## 📦 Installation
-
-### Prerequisites
-- Node.js 18+ 
-- Firebase project with Firestore enabled
-- OpenAI API key
-
-### Frontend Setup
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-### Backend Setup
-```bash
-# Navigate to server directory
-cd server
-
-# Install dependencies
-npm install
-
-# Copy environment template
-cp .env.example .env
-
-# Edit .env with your configuration
-# - OPENAI_API_KEY: Your OpenAI API key
-# - FIREBASE_DATABASE_URL: Your Firebase database URL
-
-# Copy Firebase service account
-cp firebase-service-account.example.json firebase-service-account.json
-# Edit with your Firebase service account credentials
-
-# Start server
-npm run dev
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-```env
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Firebase Configuration  
-FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
-
-# Server Configuration
-PORT=3001
-NODE_ENV=development
-```
-
-### Firebase Collections
-The system automatically creates these Firestore collections:
-- `admins` - Admin user profiles
-- `faculty` - Faculty member information
-- `students` - Student records
-- `departments` - Department information
-- `subjects` - Subject details
-- `classrooms` - Room and facility data
-- `schedules` - Generated timetables
-- `chat_sessions` - AI conversation history
-- `ai_interactions` - AI request/response logs
-- `modification_audit` - Change tracking
-
-## 🤖 AI Features Usage
-
-### Natural Language Commands
-```
-"Move John's math class from Monday 9 AM to Tuesday 10 AM"
-"Cancel all Friday afternoon classes"
-"Add a new physics lab session on Wednesday at 2 PM in Lab 201"
-"Swap the timing of chemistry and biology classes on Thursday"
-"Find all scheduling conflicts for next week"
-```
-
-### File Upload Support
-- **CSV Format**: Comma-separated schedule data
-- **Excel Files**: .xlsx and .xls formats
-- **JSON**: Structured schedule objects
-
-### API Endpoints
-- `POST /api/ai-schedule-modify` - Process natural language requests
-- `POST /api/apply-modifications` - Apply proposed changes
-- `POST /api/undo-modification` - Undo last modification
-- `GET /api/chat-sessions` - Retrieve conversation history
-
-## 🔐 Security Features
-
-### Authentication & Authorization
-- Firebase Authentication integration
-- Role-based access control (Admin/Faculty)
-- Secure API key management
-- CSRF protection
-
-### Input Validation
-- Comprehensive input sanitization
-- File type validation for uploads
-- Rate limiting (10 requests/minute)
-- SQL injection prevention
-
-### Data Protection
-- Audit logging for all modifications
-- Rollback capabilities
-- Conflict detection and prevention
-- Secure file upload handling
-
-## 📱 User Interface
-
-### Admin Panel Features
-- **Dashboard**: Overview with statistics and quick actions
-- **Department Management**: Create and manage academic departments
-- **Subject Management**: Course catalog with credits and duration
-- **Classroom Management**: Facility management with equipment tracking
-- **Faculty Management**: Complete faculty profiles with subject assignments
-- **Student Management**: Individual and bulk student operations
-- **AI Schedule Modifier**: Natural language timetable modifications
-- **Settings**: System configuration and preferences
-
-### Faculty Portal Features
-- **Schedule View**: Personal timetable with export options
-- **Feedback System**: Google Forms integration
-- **Share Options**: WhatsApp and Gmail sharing
-
-## 🌍 Multi-Language Support
-
-Supported languages include:
-- English, Hindi, Spanish, French, German
-- Italian, Portuguese, Russian, Japanese, Korean
-- Chinese, Arabic, Turkish, Dutch, Swedish
-- Danish, Norwegian, Finnish, Polish, Czech
-- Hungarian, Romanian, Bulgarian, Croatian, Slovak
-
-## 🚀 Deployment
-
-### Frontend Deployment (Vercel)
-```bash
-# Build the project
-npm run build
-
-# Deploy to Vercel
-vercel --prod
-```
-
-### Backend Deployment (Render)
-```bash
-# Push to GitHub repository
-git push origin main
-
-# Connect repository to Render
-# Set environment variables in Render dashboard
-# Deploy automatically on push
-```
-
-## 📊 Performance & Monitoring
-
-### Metrics Tracked
-- API response times
-- AI processing duration
-- User interaction patterns
-- Error rates and types
-- Database query performance
-
-### Logging
-- Comprehensive error logging
-- AI interaction tracking
-- Modification audit trails
-- User activity monitoring
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🏆 SIH Hackathon 2025
-
-**Problem Statement ID**: 25028 - Smart Classroom and Schedule Generator
-
-**Team**: EduScheduler Development Team
-
-**Key Innovation**: AI-powered natural language timetable modification system that allows non-technical administrators to manage complex scheduling using plain English commands.
-
-## 📞 Support
-
-For support and questions:
-- Create an issue on GitHub
-- Email: support@eduscheduler.com
-- Documentation: [docs.eduscheduler.com](https://docs.eduscheduler.com)
+<div align="center">
+  <img src="https://img.shields.io/badge/react-%2320232A.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="React">
+  <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB" alt="Express.js">
+  <img src="https://img.shields.io/badge/firebase-%23039BE5.svg?style=for-the-badge&logo=firebase&logoColor=white" alt="Firebase">
+  <img src="https://img.shields.io/badge/openai-%23343541.svg?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI">
+</div>
 
 ---
 
-Built with ❤️ for SIH Hackathon 2025
+## 🚀 Key Features
+
+- **🤖 AI Schedule Modification**: Use plain English commands to modify class schedules, exam timetables, and room assignments.
+- **👥 Multi-Role System**: Dedicated portals and features for Admins, Faculty, and Students.
+- **🌐 Multilingual Support**: Full internationalization supporting over 25 languages.
+- **🎨 Dual Themes**: Seamless switching between light and dark modes.
+- **📱 Responsive Design**: A great user experience on any device, from mobile phones to desktops.
+- **🔒 Secure Authentication**: Role-based access control to protect sensitive data and features.
+- **📊 Data Management**: Easy-to-use interfaces for managing all institutional data (students, faculty, classrooms, etc.).
+
+## 📦 Getting Started
+
+### Prerequisites
+- Node.js v18+
+- An active Firebase project with Firestore enabled
+- An OpenAI API key
+
+### Local Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/rajpratham1/EduScheduler.git
+    cd EduScheduler
+    ```
+
+2.  **Setup the Backend:**
+    ```bash
+    # Navigate to the server directory
+    cd server
+
+    # Install dependencies
+    npm install
+
+    # Set up environment variables
+    cp .env.example .env
+    # Add your OpenAI key and Firebase URL to the .env file
+
+    # Set up Firebase credentials
+    # Create a firebase-service-account.json file in the /server directory with your credentials
+
+    # Start the backend server
+    npm start
+    ```
+
+3.  **Setup the Frontend:**
+    ```bash
+    # From the root directory, install dependencies
+    npm install
+
+    # Set up environment variables
+    # Create a .env file in the root directory and add your Firebase client keys:
+    # VITE_FIREBASE_API_KEY=...
+    # VITE_FIREBASE_AUTH_DOMAIN=...
+    # (and so on for all required VITE_FIREBASE_ keys)
+
+    # Start the frontend development server
+    npm run dev
+    ```
+
+## 🚀 Deployment
+
+This project is configured for a dual-service deployment on **Render**.
+
+-   **Backend Service (Web Service):**
+    -   **Root Directory:** `server`
+    -   **Build Command:** `npm install`
+    -   **Start Command:** `node index.js`
+    -   **Environment:** Set `NODE_ENV` to `production` and configure all other secrets (API keys, Firebase credentials as a Secret File).
+
+-   **Frontend Service (Static Site):**
+    -   **Root Directory:** (root of the repo)
+    -   **Build Command:** `npm install && npm run build`
+    -   **Publish Directory:** `dist`
+    -   **Environment:** Set `VITE_API_URL` to the URL of your deployed backend service.
+
+## 🏆 SIH Hackathon 2025
+
+-   **Problem ID**: `25028` - Smart Classroom and Schedule Generator
+-   **Key Innovation**: An AI-powered system that allows non-technical administrators to manage complex scheduling using plain English commands, significantly reducing administrative overhead.
+
+## 📞 Project Admin & Contact
+
+Need an admin account or have questions? Contact the project administrator:
+
+-   **WhatsApp:** [https://wa.me/916200892887](https://wa.me/916200892887)
+-   **Contact Form:** [https://formspree.io/f/xnnvyarw](https://formspree.io/f/xnnvyarw)
+
+---
+
+*Built with ❤️ for the Smart India Hackathon.*
