@@ -177,27 +177,27 @@ class FirebaseService {
   // Map collection names to correct API endpoints
   private getEndpoint(collection: string): string {
     const endpointMap: Record<string, string> = {
-      'admins': '/api/admin',
-      'admin': '/api/admin',
-      'faculty': '/api/faculty',
-      'students': '/api/student',
-      'student': '/api/student', 
-      'departments': '/api/department',
-      'department': '/api/department',
-      'subjects': '/api/subject',
-      'subject': '/api/subject',
-      'classrooms': '/api/classroom',
-      'classroom': '/api/classroom',
-      'schedules': '/api/schedule',
-      'schedule': '/api/schedule',
-      'assignments': '/api/assignments',
-      'assignment_submissions': '/api/assignments/submissions',
-      'attendance': '/api/attendance',
-      'announcements': '/api/announcements',
-      'feedback': '/api/feedback',
-      'settings': '/api/settings'
+      'admins': '/admin',
+      'admin': '/admin',
+      'faculty': '/faculty',
+      'students': '/students',
+      'student': '/students', 
+      'departments': '/departments',
+      'department': '/departments',
+      'subjects': '/subjects',
+      'subject': '/subjects',
+      'classrooms': '/classrooms',
+      'classroom': '/classrooms',
+      'schedules': '/schedule',
+      'schedule': '/schedule',
+      'assignments': '/assignments',
+      'assignment_submissions': '/assignments/submissions',
+      'attendance': '/attendance',
+      'announcements': '/announcements',
+      'feedback': '/feedback',
+      'settings': '/settings'
     };
-    return endpointMap[collection] || `/api/${collection}`;
+    return endpointMap[collection] || `/${collection}`;
   }
 
   // Generic methods for API calls
