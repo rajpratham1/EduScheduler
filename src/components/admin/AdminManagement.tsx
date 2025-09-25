@@ -306,7 +306,28 @@ const AdminManagement: React.FC = () => {
                 {t('admin.userManagement.addAdminTitle')}
               </h3>
               <form onSubmit={handleCreateAdmin} className="space-y-4">
-                {/* ... (Add Admin form fields) ... */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                  <input type="text" value={adminFormData.name} onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                  <input type="email" value={adminFormData.email} onChange={(e) => setAdminFormData({ ...adminFormData, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                  <div className="flex space-x-2">
+                      <input type={showPassword ? 'text' : 'password'} value={adminFormData.password} onChange={(e) => setAdminFormData({ ...adminFormData, password: e.target.value })} className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" required />
+                      <button type="button" onClick={() => setAdminFormData({...adminFormData, password: generatePassword()})} className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">Generate</button>
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                  </div>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <button type="submit" disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50">{saving ? 'Creating...' : 'Create Admin'}</button>
+                  <button type="button" onClick={() => setIsAdminModalOpen(false)} className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                </div>
               </form>
             </div>
           </div>
@@ -322,7 +343,32 @@ const AdminManagement: React.FC = () => {
                 Add New Faculty Member
               </h3>
               <form onSubmit={handleCreateFaculty} className="space-y-4">
-                {/* ... (Add Faculty form fields) ... */}
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                      <input type="text" value={facultyFormData.name} onChange={(e) => setFacultyFormData({ ...facultyFormData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" required />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                      <input type="email" value={facultyFormData.email} onChange={(e) => setFacultyFormData({ ...facultyFormData, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" required />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+                      <input type="text" value={facultyFormData.department} onChange={(e) => setFacultyFormData({ ...facultyFormData, department: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" required />
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                      <div className="flex space-x-2">
+                          <input type={showPassword ? 'text' : 'password'} value={facultyFormData.password} onChange={(e) => setFacultyFormData({ ...facultyFormData, password: e.target.value })} className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" required />
+                          <button type="button" onClick={() => setFacultyFormData({...facultyFormData, password: generatePassword()})} className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">Generate</button>
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                      </div>
+                  </div>
+                  <div className="flex space-x-3 pt-4">
+                      <button type="submit" disabled={saving} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50">{saving ? 'Creating...' : 'Create Faculty'}</button>
+                      <button type="button" onClick={() => setIsFacultyModalOpen(false)} className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                  </div>
               </form>
             </div>
           </div>
