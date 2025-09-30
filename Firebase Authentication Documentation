@@ -1,0 +1,25 @@
+# 3. Authentication: Firebase Authentication
+
+*   **Source**: Google Firebase
+*   **Year**: 2024
+*   **URL**: [https://firebase.google.com/docs/auth](https://firebase.google.com/docs/auth)
+
+### Annotation:
+
+Firebase Authentication was chosen to handle all aspects of user identity and access control within EduScheduler. It provides a complete and secure solution for managing user sign-up, login, and identity verification, which is essential for protecting the application's data and ensuring that users only have access to the features relevant to their role (admin, faculty, or student).
+
+By integrating Firebase Authentication, we offload the complex and critical responsibility of identity management to a secure, managed service. This allows us to focus on building the core features of EduScheduler rather than building an authentication system from scratch.
+
+The key benefits of using Firebase Authentication for this project include:
+
+*   **Secure and Reliable**: Security is paramount in an application that handles user data. Firebase Authentication is built and maintained by Google's security experts, providing robust protection against common threats. It securely stores user credentials (like passwords) and handles the entire authentication lifecycle, from token generation to session management.
+
+*   **Multiple Authentication Providers**: While the current implementation may use email and password, Firebase Authentication makes it easy to add other login methods in the future, such as social logins (Google, Facebook, etc.) or phone number verification. This flexibility allows EduScheduler to adapt to user preferences without significant engineering effort.
+
+*   **Role-Based Access Control (RBAC)**: Firebase Authentication is the foundation of our security model. Once a user is authenticated, we can use their unique ID (`uid`) to associate them with a specific role (e.g., 'admin', 'faculty', 'student') in our Firestore database. This integration is critical for implementing role-based access control, where Firestore Security Rules are used to define what data each type of user is allowed to read, write, or modify.
+
+*   **Pre-built UI and SDKs**: Firebase provides easy-to-use SDKs and, for rapid development, a pre-built UI library called FirebaseUI. This simplifies the process of creating user-friendly sign-up and login flows, ensuring a smooth and professional user experience from the moment a user interacts with the application.
+
+*   **Scalability**: Just like Firestore, Firebase Authentication is designed to scale effortlessly. Whether EduScheduler is serving a small department or an entire university, the authentication service can handle a massive number of users without any degradation in performance or reliability.
+
+In summary, Firebase Authentication provides a secure, scalable, and feature-rich identity solution that is fundamental to the architecture of EduScheduler, enabling secure access for all user roles across the platform.
